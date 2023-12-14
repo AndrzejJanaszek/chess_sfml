@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "Board.h"
 
+
 class Game
 {
 private:
@@ -10,6 +11,14 @@ private:
 	sf::Font fontUbuntuMono;
 	sf::Event ev;
 	Board board;
+
+	////game logic
+	//ColorType activePlayer;
+	//// v(-1,-1) == null
+	//sf::Vector2i activePiece;
+
+	////game objects
+	//std::vector<sf::Sprite> pieceSprites;
 
 	std::map<std::string, sf::Texture> textures;
 	sf::RectangleShape darkSquare;

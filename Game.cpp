@@ -1,46 +1,6 @@
 #include "Game.h"
 #include <iostream>
 
-struct PieceName
-{
-	static const std::string BLACK_KING;
-	static const std::string BLACK_QUEEN;
-	static const std::string BLACK_ROOK;
-	static const std::string BLACK_KNIGHT;
-	static const std::string BLACK_BISHOP;
-	static const std::string BLACK_PAWN;
-
-	static const std::string WHITE_KING;
-	static const std::string WHITE_QUEEN;
-	static const std::string WHITE_ROOK;
-	static const std::string WHITE_KNIGHT;
-	static const std::string WHITE_BISHOP;
-	static const std::string WHITE_PAWN;
-
-	static const std::string EMPTY;
-};
-const std::string PieceName::BLACK_KING = "k";
-const std::string PieceName::BLACK_QUEEN = "q";
-const std::string PieceName::BLACK_ROOK = "r";
-const std::string PieceName::BLACK_KNIGHT = "n";
-const std::string PieceName::BLACK_BISHOP = "b";
-const std::string PieceName::BLACK_PAWN = "p";
-const std::string PieceName::WHITE_KING = "K";
-const std::string PieceName::WHITE_QUEEN = "Q";
-const std::string PieceName::WHITE_ROOK = "R";
-const std::string PieceName::WHITE_KNIGHT = "N";
-const std::string PieceName::WHITE_BISHOP = "B";
-const std::string PieceName::WHITE_PAWN = "P";
-const std::string PieceName::EMPTY = "-";
-
-struct TextureName : PieceName
-{
-	static const std::string DARK_SQUARE;
-	static const std::string LIGHT_SQUARE;
-};
-const std::string DARK_SQUARE = "dark_square";
-const std::string LIGHT_SQUARE = "light_square";
-
 void Game::initVariables()
 {
 	this->window = nullptr;
@@ -51,7 +11,8 @@ void Game::initVariables()
 	}
 
 	//Textures
-	std::string* piecesNames = new std::string[12]{
+	const size_t _pieces_names_len_ = 12;
+	std::string* piecesNames = new std::string[_pieces_names_len_]{
 		PieceName::BLACK_KING,
 		PieceName::BLACK_QUEEN,
 		PieceName::BLACK_ROOK,
@@ -66,7 +27,7 @@ void Game::initVariables()
 		PieceName::WHITE_BISHOP,
 		PieceName::WHITE_PAWN
 	};
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < _pieces_names_len_; i++) {
 		sf::Texture piece_texture;
 		piece_texture.setSmooth(true);
 		const std::string s1 = "./pieces/";
@@ -90,11 +51,28 @@ void Game::initVariables()
 	this->darkSquare.setFillColor(sf::Color(40, 40, 40));
 	this->lightSquare = sf::RectangleShape(sf::Vector2f(100, 100));
 	this->lightSquare.setFillColor(sf::Color(200, 200, 200));
+
+
+	//play set
+	/*this->activePlayer = ColorType::LIGHT;
+	this->activePiece = sf::Vector2i(-1,-1);*/
+
+	//Set Texture to pieces
+	for (int row = 0; row < 8; row++) {
+		for (int col = 0; col < 8; col++) {
+			//draw pieces
+			if (this->board.at(row, col) != nullptr) {
+				std::string pieceStr = this->board.at(row, col)->type;
+				this->board.at(row, col)->sprite.setTexture(this->textures[pieceStr]);
+			}
+		}
+	}
 }
 
 void Game::initWindow()
 {
 	this->window = new sf::RenderWindow(sf::VideoMode(800, 800), "Title");
+	this->window->setFramerateLimit(60);
 }
 
 Game::Game()
@@ -114,6 +92,12 @@ void Game::pollEvents() {
 		if (this->ev.type == sf::Event::Closed) {
 			this->window->close();
 		}
+		if (this->ev.type == sf::Event::MouseButtonPressed) {
+			//klikniecie bierki
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+				std::cout << "Kilk left\n";
+			}
+		}
 	}
 }
 
@@ -127,9 +111,9 @@ void Game::render()
 //clear
 	this->window->clear();
 //draw
-	
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
+			//draw board (dark and ligth squares)
 			if ((row + col) % 2 == 0) {
 				lightSquare.setPosition(col * 100, row * 100);
 				this->window->draw(this->lightSquare);
@@ -139,15 +123,16 @@ void Game::render()
 				this->window->draw(this->darkSquare);
 			}
 			
-			std::string pieceStr(1, this->board.at(row, col));
-			if (PieceName::EMPTY.compare(pieceStr)){
+			//draw pieces
+			if (this->board.at(row, col) != nullptr){
+				std::string pieceStr = this->board.at(row, col)->type;
 
-				//TODO: drop shadow
-				sf::Sprite pieceSprite;
+				/*sf::Sprite pieceSprite;
 				pieceSprite.setScale(100 / 256.0f, 100 / 256.0f);
 				pieceSprite.setPosition(col * 100, row * 100);
-				pieceSprite.setTexture(this->textures[pieceStr]);
-				this->window->draw(pieceSprite);
+				pieceSprite.setTexture(this->textures[pieceStr]);*/
+				//this->board.at(row, col)->sprite.setTexture(this->textures[pieceStr]);
+				this->window->draw(this->board.at(row, col)->sprite);
 			}
 		}
 	}

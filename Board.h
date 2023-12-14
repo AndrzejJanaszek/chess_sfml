@@ -1,4 +1,5 @@
 #pragma once
+#include "Piece.h"
 
 class Board
 {
@@ -15,7 +16,7 @@ private:
 
 	// 0,0 1,0 2,0 ...
 	// [0] [1] [2] [3] [4] [5] [6] ... [n] 
-	char* board;
+	Piece** board;
 	void initVariables();
 public:
 	Board();
@@ -23,7 +24,7 @@ public:
 
 	//functions
 	void initBoard();
-	char at(int row, int col);
+	Piece* at(int row, int col);
 	void print();
 };
 

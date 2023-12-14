@@ -6,9 +6,6 @@
 
 int main() {
 	Game game;
-
-	//sf::RenderWindow window(sf::VideoMode(800,800), "Title");
-
 	/*sf::Font fontUbuntu;
 	if (!fontUbuntu.loadFromFile("./fonts/Ubuntu/Ubuntu-Regular.ttf")) {
 		std::cout << "Error: Load from file Ubuntu-Regular\n";
