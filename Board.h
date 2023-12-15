@@ -41,5 +41,7 @@ public:
 
 	//row, col -> piece's cordinates
 	std::vector<sf::Vector2i> getPossibleMoves(int row, int col, ColorType activeColor);
+
+	void makeMove(sf::Vector2i from, sf::Vector2i dest);
 };
 

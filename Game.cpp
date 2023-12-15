@@ -114,7 +114,14 @@ void Game::pollEvents() {
 						//Made a possible move!!!
 						if (possibleMoves[i].x == rowCast && possibleMoves[i].y == colCast) {
 							isMoveMade = true;
+
+							board.makeMove(activePiece, possibleMoves[i]);
+							this->activePiece = sf::Vector2i(-1,-1);
+							possibleMoves.clear();
+							activePlayer = activePlayer == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
 							std::cout << "Make move!!!\n";
+
+							board.print();
 						}
 					}
 
@@ -161,8 +168,7 @@ void Game::render()
 
 			//draw pieces
 			if (this->board.at(row, col) != nullptr){
-				std::string pieceStr = this->board.at(row, col)->type;
-				
+				/*std::string pieceStr = this->board.at(row, col)->type;*/
 				
 				/*sf::Sprite pieceSprite;
 				pieceSprite.setScale(100 / 256.0f, 100 / 256.0f);
@@ -175,6 +181,8 @@ void Game::render()
 					squareShape.setFillColor(sf::Color(190, 20, 20));
 					this->window->draw(squareShape);
 				}
+
+				this->board.at(row, col)->sprite.setPosition(col * 100, row * 100);
 				this->window->draw(this->board.at(row, col)->sprite);
 			}
 		}

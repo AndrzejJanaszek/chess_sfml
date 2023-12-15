@@ -66,6 +66,9 @@ void Board::print() {
 			if (this->board[i * 8 + j] != nullptr) {
 				std::cout << this->board[i*8+j]->type;
 			}
+			else {
+				std::cout << ".";
+			}
 		}
 		std::cout << "\n";
 	}
@@ -101,8 +104,8 @@ std::vector<sf::Vector2i> Board::getPossibleMoves(int row, int col, ColorType ac
 	std::string pieceType = this->at(row, col)->type;
 	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
 	//pawn
-
 	if (pieceType == "P") {
+		int firstPawnRow = activeColor == ColorType::LIGHT ? 6 : 1;
 		//for pawn
 		int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
 		sf::Vector2i attack1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1);
@@ -129,8 +132,10 @@ std::vector<sf::Vector2i> Board::getPossibleMoves(int row, int col, ColorType ac
 			possibleMoves.push_back(move1);
 
 			//move2
-			if (this->isMoveOnBoard(move2.x, move2.y) && isFreeSquare(move2.x, move2.y)) {
-				possibleMoves.push_back(move2);
+			if (firstPawnRow == row) {
+				if (this->isMoveOnBoard(move2.x, move2.y) && isFreeSquare(move2.x, move2.y)) {
+					possibleMoves.push_back(move2);
+				}
 			}
 		}
 	}
@@ -268,12 +273,20 @@ bool Board::isEnPassant() {
 		return true;
 	return false;
 }
+
 sf::Vector2i Board::getEnPassant() {
 	return this->enPassant;
 }
+
 void Board::setEnPassant(sf::Vector2i newEnPassant) {
 	this->enPassant = newEnPassant;
 }
+
 void Board::clearEnPassant() {
 	this->enPassant = sf::Vector2i(-1,-1);
+}
+
+void Board::makeMove(sf::Vector2i from, sf::Vector2i dest) {
+	board[dest.x * 8 + dest.y] = this->at(from.x, from.y);
+	board[from.x * 8 + from.y] = nullptr;
 }
