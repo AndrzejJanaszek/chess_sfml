@@ -43,5 +43,6 @@ public:
 	std::vector<sf::Vector2i> getPossibleMoves(int row, int col, ColorType activeColor);
 
 	void makeMove(sf::Vector2i from, sf::Vector2i dest);
+	void makeMove(sf::Vector2i from, sf::Vector2i dest, MoveType moveType);
 };
 

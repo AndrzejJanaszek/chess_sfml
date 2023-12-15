@@ -131,7 +131,7 @@ std::vector<sf::Vector2i> Board::getPossibleMoves(int row, int col, ColorType ac
 		if (this->isMoveOnBoard(move1.x, move1.y) && isFreeSquare(move1.x, move1.y)) {
 			possibleMoves.push_back(move1);
 
-			//move2
+			//move2 PAWN_LONG
 			if (firstPawnRow == row) {
 				if (this->isMoveOnBoard(move2.x, move2.y) && isFreeSquare(move2.x, move2.y)) {
 					possibleMoves.push_back(move2);
@@ -289,4 +289,27 @@ void Board::clearEnPassant() {
 void Board::makeMove(sf::Vector2i from, sf::Vector2i dest) {
 	board[dest.x * 8 + dest.y] = this->at(from.x, from.y);
 	board[from.x * 8 + from.y] = nullptr;
+}
+
+void Board::makeMove(sf::Vector2i from, sf::Vector2i dest, MoveType moveType) {
+	if (MoveType::PAWN_LONG == moveType) {
+		int targetRow = (from.x - dest.x) / 2;
+		this->enPassant = sf::Vector2i(from.x+targetRow,from.y);
+		//1 -> 3 3-1=2 / 2 = 1   start
+		//6 -> 4 4-6=-2 / 2 = -1
+	}
+	else if (MoveType::EN_PASSANT == moveType) {
+		//TODO
+	}
+	else if(MoveType::LONG_CASTLE == moveType) {
+		//TODO
+	}
+	else if (MoveType::SHORT_CASTLE == moveType) {
+		//TODO
+	}
+	else if (MoveType::PROMOTION == moveType) {
+		//TODO
+	}
+
+	makeMove(from, dest);
 }
