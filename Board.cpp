@@ -69,3 +69,32 @@ void Board::print() {
 	}
 	std::cout << "\nKoniec Wypisu\n";
 }
+
+bool Board::isFriendlyPiece(int row, int col, ColorType color) {
+	if (this->at(row, col) == nullptr) return false;
+
+	if (this->at(row, col)->getColor() == color) 
+		return true;
+	return false;
+}
+
+std::vector<sf::Vector2i> Board::getPossibleMoves(int row, int col, ColorType activeColor) {
+	std::vector<sf::Vector2i> possibleMoves;
+	if (this->at(row, col) == nullptr) return possibleMoves;
+
+	std::string pieceType = this->at(row, col)->type;
+	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
+	//pawn
+	if (pieceType == "P") {
+		if (activeColor == ColorType::LIGHT) {
+			possibleMoves.push_back(sf::Vector2i(row-1, col));
+			possibleMoves.push_back(sf::Vector2i(row-2, col));
+		}
+		else {
+			possibleMoves.push_back(sf::Vector2i(row + 1, col));
+			possibleMoves.push_back(sf::Vector2i(row + 2, col));
+		}
+	}
+
+	return possibleMoves;
+}

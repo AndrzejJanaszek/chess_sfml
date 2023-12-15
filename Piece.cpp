@@ -14,3 +14,11 @@ Piece::Piece(std::string fenType)
 Piece::~Piece()
 {
 }
+
+ColorType Piece::getColor() {
+	//CAP	65 90	WHITE
+	//small 97 122	BLACK
+	if (65 <= type[0] && type[0] <= 90)
+		return ColorType::LIGHT;
+	return ColorType::DARK;
+}

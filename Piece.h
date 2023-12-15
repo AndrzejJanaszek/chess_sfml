@@ -14,5 +14,6 @@ public:
 	sf::Sprite sprite;
 	std::string type;
 
+	ColorType getColor();
 };
 

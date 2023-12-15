@@ -26,5 +26,9 @@ public:
 	void initBoard();
 	Piece* at(int row, int col);
 	void print();
+	bool isFriendlyPiece(int row, int col, ColorType color);
+
+	//row, col -> piece's cordinates
+	std::vector<sf::Vector2i> getPossibleMoves(int row, int col, ColorType activeColor);
 };
 

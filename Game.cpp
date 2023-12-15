@@ -54,8 +54,8 @@ void Game::initVariables()
 
 
 	//play set
-	/*this->activePlayer = ColorType::LIGHT;
-	this->activePiece = sf::Vector2i(-1,-1);*/
+	this->activePlayer = ColorType::LIGHT;
+	this->activePiece = sf::Vector2i(-1,-1);
 
 	//Set Texture to pieces
 	for (int row = 0; row < 8; row++) {
@@ -96,6 +96,33 @@ void Game::pollEvents() {
 			//klikniecie bierki
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 				std::cout << "Kilk left\n";
+				this->mousePosition = sf::Mouse::getPosition( *this->window );
+				
+				// position / square size
+				int rowCast = mousePosition.y / 100;
+				int colCast = mousePosition.x / 100;
+
+				if (activePiece.x < 0) {
+					if (board.isFriendlyPiece(rowCast, colCast, activePlayer)) {
+						activePiece = sf::Vector2i(rowCast, colCast);
+						this->possibleMoves = board.getPossibleMoves(rowCast, colCast, activePlayer);
+					}
+				}
+				else {
+					bool isMoveMade = false;
+					for (int i = 0; i < this->possibleMoves.size(); i++){
+						//Made a possible move!!!
+						if (possibleMoves[i].y == rowCast && possibleMoves[i].x == colCast) {
+							isMoveMade = true;
+							std::cout << "Make move!!!\n";
+						}
+					}
+
+					if (isMoveMade == false) {
+						this->activePiece = sf::Vector2i(-1,-1);
+						this->possibleMoves.clear();
+					}
+				}
 			}
 		}
 	}
@@ -123,15 +150,31 @@ void Game::render()
 				this->window->draw(this->darkSquare);
 			}
 			
+			for (auto move : this->possibleMoves) {
+				if (move.x == row && move.y == col) {
+					sf::RectangleShape squareShape = sf::RectangleShape(sf::Vector2f(100, 100));
+					squareShape.setPosition(col * 100, row * 100);
+					squareShape.setFillColor(sf::Color(160, 20, 20));
+					this->window->draw(squareShape);
+				}
+			}
+
 			//draw pieces
 			if (this->board.at(row, col) != nullptr){
 				std::string pieceStr = this->board.at(row, col)->type;
-
+				
+				
 				/*sf::Sprite pieceSprite;
 				pieceSprite.setScale(100 / 256.0f, 100 / 256.0f);
 				pieceSprite.setPosition(col * 100, row * 100);
 				pieceSprite.setTexture(this->textures[pieceStr]);*/
 				//this->board.at(row, col)->sprite.setTexture(this->textures[pieceStr]);
+				if (activePiece.x == row && activePiece.y == col) {
+					sf::RectangleShape squareShape = sf::RectangleShape(sf::Vector2f(100,100));
+					squareShape.setPosition(col * 100, row * 100);
+					squareShape.setFillColor(sf::Color(190, 20, 20));
+					this->window->draw(squareShape);
+				}
 				this->window->draw(this->board.at(row, col)->sprite);
 			}
 		}

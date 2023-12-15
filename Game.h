@@ -13,9 +13,12 @@ private:
 	Board board;
 
 	////game logic
-	//ColorType activePlayer;
+	ColorType activePlayer;
 	//// v(-1,-1) == null
-	//sf::Vector2i activePiece;
+	sf::Vector2i activePiece;
+	sf::Vector2i mousePosition;
+	//vector of possible squares to move
+	std::vector<sf::Vector2i> possibleMoves;
 
 	////game objects
 	//std::vector<sf::Sprite> pieceSprites;
