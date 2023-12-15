@@ -19,6 +19,8 @@ private:
 	Piece** board;
 	void initVariables();
 	bool isMoveOnBoard(int row, int col);
+
+	sf::Vector2i enPassant;
 public:
 	Board();
 	virtual ~Board();
@@ -27,9 +29,15 @@ public:
 	void initBoard();
 	Piece* at(int row, int col);
 	void print();
+	
 	bool isFriendlyPiece(int row, int col, ColorType activeColor);
 	bool isEnemyPiece(int row, int col, ColorType activeColor);
 	bool isFreeSquare(int row, int col);
+
+	bool isEnPassant();
+	sf::Vector2i getEnPassant();
+	void setEnPassant(sf::Vector2i newEnPassant);
+	void clearEnPassant();
 
 	//row, col -> piece's cordinates
 	std::vector<sf::Vector2i> getPossibleMoves(int row, int col, ColorType activeColor);

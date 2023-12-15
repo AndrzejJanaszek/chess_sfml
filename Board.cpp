@@ -18,6 +18,7 @@ Board::~Board()
 void Board::initVariables() {
 	//this->board = nullptr;
 	this->board = new Piece*[8*8];
+	this->enPassant = sf::Vector2i(-1, -1);
 }
 
 void Board::initBoard() {
@@ -99,46 +100,41 @@ std::vector<sf::Vector2i> Board::getPossibleMoves(int row, int col, ColorType ac
 
 	std::string pieceType = this->at(row, col)->type;
 	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
-
-	ColorType enemyColor = activeColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
 	//pawn
-	/*
+
 	if (pieceType == "P") {
 		//for pawn
-		//int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
-		std::vector<sf::Vector2i> movesTemp;
-		movesTemp.push_back( sf::Vector2i(row + 1 * colorDirectionMultiplier, col) );
-		movesTemp.push_back( sf::Vector2i(row + 2 * colorDirectionMultiplier, col) ); //en pasant
-		movesTemp.push_back( sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1) );
-		movesTemp.push_back( sf::Vector2i(row + 1 * colorDirectionMultiplier, col + 1) );
-		//(row + 1 * colorDirectionMultiplier, col)
-		//(row + 2 * colorDirectionMultiplier, col) en pasant
-		//(row + 1 * colorDirectionMultiplier, col - 1)
-		//(row + 1 * colorDirectionMultiplier, col + 1)
+		int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
+		sf::Vector2i attack1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1);
+		sf::Vector2i attack2 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col + 1);
+		sf::Vector2i move1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col);
+		sf::Vector2i move2= sf::Vector2i(row + 2 * colorDirectionMultiplier, col);
 
-		for (auto moveT : movesTemp) {
-			if (this->isMoveOnBoard(moveT.x, moveT.y)) {
-
+		//attacks
+		//if onBoard AND isEnemy
+		if ( this->isMoveOnBoard(attack1.x, attack1.y) ) {
+			if ( isEnemyPiece(attack1.x, attack1.y, activeColor) || (enPassant.x == attack1.x && enPassant.y == attack1.y) ) {
+				possibleMoves.push_back(attack1);
+			}
+		}
+		if (this->isMoveOnBoard(attack2.x, attack2.y)) {
+			if (isEnemyPiece(attack2.x, attack2.y, activeColor) || (enPassant.x == attack2.x && enPassant.y == attack2.y)) {
+				possibleMoves.push_back(attack2);
 			}
 		}
 
-		if (activeColor == ColorType::LIGHT) {
-			possibleMoves.push_back(sf::Vector2i(row - 1, col));
-			possibleMoves.push_back(sf::Vector2i(row - 2, col));
+		//move1
+		//if onBoard AND isFreeSquare
+		if (this->isMoveOnBoard(move1.x, move1.y) && isFreeSquare(move1.x, move1.y)) {
+			possibleMoves.push_back(move1);
 
-			if (this->isFriendlyPiece(row - 1, col - 1, enemyColor)) {
-				possibleMoves.push_back(sf::Vector2i(row - 1, col - 1));
+			//move2
+			if (this->isMoveOnBoard(move2.x, move2.y) && isFreeSquare(move2.x, move2.y)) {
+				possibleMoves.push_back(move2);
 			}
-			if (this->isFriendlyPiece(row - 1, col + 1, enemyColor)) {
-				possibleMoves.push_back(sf::Vector2i(row - 1, col + 1));
-			}
-		}
-		else {
-			possibleMoves.push_back(sf::Vector2i(row + 1, col));
-			possibleMoves.push_back(sf::Vector2i(row + 2, col));
 		}
 	}
-	*/
+
 	if (pieceType == "N") {
 		std::vector<sf::Vector2i> movesTemp;
 		movesTemp.push_back(sf::Vector2i(row + 2, col + 1));
@@ -265,4 +261,19 @@ bool Board::isMoveOnBoard(int row, int col) {
 		0 <= col && col < 8) return true;
 
 	return false;
+}
+
+bool Board::isEnPassant() {
+	if (this->enPassant.x >= 0 && this->enPassant.y >= 0 && this->enPassant.x < 8 && this->enPassant.y < 8)
+		return true;
+	return false;
+}
+sf::Vector2i Board::getEnPassant() {
+	return this->enPassant;
+}
+void Board::setEnPassant(sf::Vector2i newEnPassant) {
+	this->enPassant = newEnPassant;
+}
+void Board::clearEnPassant() {
+	this->enPassant = sf::Vector2i(-1,-1);
 }
