@@ -23,7 +23,8 @@ void Board::initVariables() {
 void Board::initBoard() {
 	//if empty: -
 	//const char empty = '-';
-	std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	//std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	std::string fen = "1r2kbnr/pp1ppppp/2p2q2/1NP5/B2b4/1n3NQ1/PP1P1PPP/R3KB1R w KQk - 0 1";
 	//std::string fen = "3q4/8/6P1/PK1N1k2/PP1p4/p5np/4pP1p/5r2 w - - 0 1";
 
 	int j = 0;
@@ -70,11 +71,25 @@ void Board::print() {
 	std::cout << "\nKoniec Wypisu\n";
 }
 
-bool Board::isFriendlyPiece(int row, int col, ColorType color) {
-	if (this->at(row, col) == nullptr) return false;
+bool Board::isFriendlyPiece(int row, int col, ColorType activeColor) {
+	if (this->isFreeSquare(row,col)) return false;
 
-	if (this->at(row, col)->getColor() == color) 
+	if (this->at(row, col)->getColor() == activeColor)
 		return true;
+	return false;
+}
+
+bool Board::isEnemyPiece(int row, int col, ColorType activeColor) {
+	if (this->isFreeSquare(row, col)) return false;
+
+	if (this->at(row, col)->getColor() != activeColor)
+		return true;
+	return false;
+}
+
+bool Board::isFreeSquare(int row, int col) {
+	if (this->at(row, col) == nullptr) return true;
+
 	return false;
 }
 
@@ -84,17 +99,170 @@ std::vector<sf::Vector2i> Board::getPossibleMoves(int row, int col, ColorType ac
 
 	std::string pieceType = this->at(row, col)->type;
 	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
+
+	ColorType enemyColor = activeColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
 	//pawn
+	/*
 	if (pieceType == "P") {
+		//for pawn
+		//int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
+		std::vector<sf::Vector2i> movesTemp;
+		movesTemp.push_back( sf::Vector2i(row + 1 * colorDirectionMultiplier, col) );
+		movesTemp.push_back( sf::Vector2i(row + 2 * colorDirectionMultiplier, col) ); //en pasant
+		movesTemp.push_back( sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1) );
+		movesTemp.push_back( sf::Vector2i(row + 1 * colorDirectionMultiplier, col + 1) );
+		//(row + 1 * colorDirectionMultiplier, col)
+		//(row + 2 * colorDirectionMultiplier, col) en pasant
+		//(row + 1 * colorDirectionMultiplier, col - 1)
+		//(row + 1 * colorDirectionMultiplier, col + 1)
+
+		for (auto moveT : movesTemp) {
+			if (this->isMoveOnBoard(moveT.x, moveT.y)) {
+
+			}
+		}
+
 		if (activeColor == ColorType::LIGHT) {
-			possibleMoves.push_back(sf::Vector2i(row-1, col));
-			possibleMoves.push_back(sf::Vector2i(row-2, col));
+			possibleMoves.push_back(sf::Vector2i(row - 1, col));
+			possibleMoves.push_back(sf::Vector2i(row - 2, col));
+
+			if (this->isFriendlyPiece(row - 1, col - 1, enemyColor)) {
+				possibleMoves.push_back(sf::Vector2i(row - 1, col - 1));
+			}
+			if (this->isFriendlyPiece(row - 1, col + 1, enemyColor)) {
+				possibleMoves.push_back(sf::Vector2i(row - 1, col + 1));
+			}
 		}
 		else {
 			possibleMoves.push_back(sf::Vector2i(row + 1, col));
 			possibleMoves.push_back(sf::Vector2i(row + 2, col));
 		}
 	}
+	*/
+	if (pieceType == "N") {
+		std::vector<sf::Vector2i> movesTemp;
+		movesTemp.push_back(sf::Vector2i(row + 2, col + 1));
+		movesTemp.push_back(sf::Vector2i(row + 2, col - 1));
+		movesTemp.push_back(sf::Vector2i(row + 1, col + 2));
+		movesTemp.push_back(sf::Vector2i(row + 1, col - 2));
+		movesTemp.push_back(sf::Vector2i(row - 1, col + 2));
+		movesTemp.push_back(sf::Vector2i(row - 1, col - 2));
+		movesTemp.push_back(sf::Vector2i(row - 2, col + 1));
+		movesTemp.push_back(sf::Vector2i(row - 2, col - 1));
+
+		for (auto moveT : movesTemp) {
+			//if not on board continue
+			if (!isMoveOnBoard(moveT.x, moveT.y)) continue;
+
+			if (isFreeSquare(moveT.x, moveT.y) || isEnemyPiece(moveT.x, moveT.y, activeColor) ) {
+				possibleMoves.push_back(moveT);
+			}
+		}
+	}
+
+	if (pieceType == "R") {
+		std::vector<sf::Vector2i> moveDirections;
+		moveDirections.push_back(sf::Vector2i(1, 0));
+		moveDirections.push_back(sf::Vector2i(-1, 0));
+		moveDirections.push_back(sf::Vector2i(0, 1));
+		moveDirections.push_back(sf::Vector2i(0, -1));
+
+		//for each direction
+		for (auto mDir : moveDirections) {
+			int multiplier = 1;
+			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+
+			while (this->isMoveOnBoard(move.x, move.y)) {
+				if (this->isFreeSquare(move.x, move.y)) {
+					possibleMoves.push_back(move); 
+				}
+				else if (this->isFriendlyPiece(move.x, move.y, activeColor)) {
+					break;
+				}
+				else if (this->isEnemyPiece(move.x, move.y, activeColor)) {
+					possibleMoves.push_back(move);
+
+					break;
+				}
+
+				multiplier++;
+				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+			}
+		}
+	}
+
+	if (pieceType == "B") {
+		std::vector<sf::Vector2i> moveDirections;
+		moveDirections.push_back(sf::Vector2i(1, 1));
+		moveDirections.push_back(sf::Vector2i(1, -1));
+		moveDirections.push_back(sf::Vector2i(-1, 1));
+		moveDirections.push_back(sf::Vector2i(-1, -1));
+
+		//for each direction
+		for (auto mDir : moveDirections) {
+			int multiplier = 1;
+			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+
+			while (this->isMoveOnBoard(move.x, move.y)) {
+				if (this->isFreeSquare(move.x, move.y)) {
+					possibleMoves.push_back(move);
+				}
+				else if (this->isFriendlyPiece(move.x, move.y, activeColor)) {
+					break;
+				}
+				else if (this->isEnemyPiece(move.x, move.y, activeColor)) {
+					possibleMoves.push_back(move);
+
+					break;
+				}
+
+				multiplier++;
+				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+			}
+		}
+	}
+
+	if (pieceType == "Q") {
+		std::vector<sf::Vector2i> moveDirections;
+		moveDirections.push_back(sf::Vector2i(1, 0));
+		moveDirections.push_back(sf::Vector2i(-1, 0));
+		moveDirections.push_back(sf::Vector2i(0, 1));
+		moveDirections.push_back(sf::Vector2i(0, -1));
+		moveDirections.push_back(sf::Vector2i(1, 1));
+		moveDirections.push_back(sf::Vector2i(1, -1));
+		moveDirections.push_back(sf::Vector2i(-1, 1));
+		moveDirections.push_back(sf::Vector2i(-1, -1));
+
+		//for each direction
+		for (auto mDir : moveDirections) {
+			int multiplier = 1;
+			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+
+			while (this->isMoveOnBoard(move.x, move.y)) {
+				if (this->isFreeSquare(move.x, move.y)) {
+					possibleMoves.push_back(move);
+				}
+				else if (this->isFriendlyPiece(move.x, move.y, activeColor)) {
+					break;
+				}
+				else if (this->isEnemyPiece(move.x, move.y, activeColor)) {
+					possibleMoves.push_back(move);
+
+					break;
+				}
+
+				multiplier++;
+				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+			}
+		}
+	}
 
 	return possibleMoves;
+}
+
+bool Board::isMoveOnBoard(int row, int col) {
+	if (0 <= row && row < 8 &&
+		0 <= col && col < 8) return true;
+
+	return false;
 }

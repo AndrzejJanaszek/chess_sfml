@@ -48,9 +48,9 @@ void Game::initVariables()
 	//Shapes
 	//textures[TextureName::DARK_SQUARE] = darkSquare;
 	this->darkSquare = sf::RectangleShape(sf::Vector2f(100, 100));
-	this->darkSquare.setFillColor(sf::Color(40, 40, 40));
+	this->darkSquare.setFillColor(sf::Color(194, 126, 76));
 	this->lightSquare = sf::RectangleShape(sf::Vector2f(100, 100));
-	this->lightSquare.setFillColor(sf::Color(200, 200, 200));
+	this->lightSquare.setFillColor(sf::Color(255, 255, 197));
 
 
 	//play set
@@ -112,7 +112,7 @@ void Game::pollEvents() {
 					bool isMoveMade = false;
 					for (int i = 0; i < this->possibleMoves.size(); i++){
 						//Made a possible move!!!
-						if (possibleMoves[i].y == rowCast && possibleMoves[i].x == colCast) {
+						if (possibleMoves[i].x == rowCast && possibleMoves[i].y == colCast) {
 							isMoveMade = true;
 							std::cout << "Make move!!!\n";
 						}

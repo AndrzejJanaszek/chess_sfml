@@ -18,6 +18,7 @@ private:
 	// [0] [1] [2] [3] [4] [5] [6] ... [n] 
 	Piece** board;
 	void initVariables();
+	bool isMoveOnBoard(int row, int col);
 public:
 	Board();
 	virtual ~Board();
@@ -26,7 +27,9 @@ public:
 	void initBoard();
 	Piece* at(int row, int col);
 	void print();
-	bool isFriendlyPiece(int row, int col, ColorType color);
+	bool isFriendlyPiece(int row, int col, ColorType activeColor);
+	bool isEnemyPiece(int row, int col, ColorType activeColor);
+	bool isFreeSquare(int row, int col);
 
 	//row, col -> piece's cordinates
 	std::vector<sf::Vector2i> getPossibleMoves(int row, int col, ColorType activeColor);
