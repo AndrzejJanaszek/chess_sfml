@@ -24,8 +24,10 @@ private:
 
 	ColorType* activePlayerPtr;
 
-	bool isLongCastlePossible;
-	bool isShortCastlePossible;
+	bool isLightKingCastlePossible;
+	bool isLightQueenCastlePossible;
+	bool isDarkKingCastlePossible;
+	bool isDarkQueenCastlePossible;
 public:
 	Board(ColorType* refActivePlayer);
 	virtual ~Board();
