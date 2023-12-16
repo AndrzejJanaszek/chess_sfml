@@ -156,9 +156,6 @@ bool Board::isFreeSquare(int row, int col) {
 std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColor) {
 	std::vector<Move> possibleMoves;
 	if (isFreeSquare(row,col)) return possibleMoves;
-	ColorType enemyColor = activeColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
-	std::vector<sf::Vector2i> squaresUnderAttack = getSquaresUnderAttack(enemyColor, true);
-
 
 	std::string pieceType = this->at(row, col)->type;
 	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
@@ -324,6 +321,8 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	}
 
 	if (pieceType == "K") {
+		ColorType enemyColor = activeColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
+		std::vector<sf::Vector2i> squaresUnderAttack = getSquaresUnderAttack(enemyColor, true);
 		std::vector<sf::Vector2i> movesTemp;
 		movesTemp.push_back(sf::Vector2i(row + 1, col));
 		movesTemp.push_back(sf::Vector2i(row - 1, col));
