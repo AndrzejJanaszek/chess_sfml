@@ -60,12 +60,14 @@ public:
 	void makeMove(sf::Vector2i from, sf::Vector2i dest);
 	void makeMove(sf::Vector2i from, Move move);
 
-	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor, bool kingsFuture);
-	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor, bool kingsFuture);
+	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor, bool ignoreKing);
+	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor, bool ignoreKing);
 
 	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor);
 	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor);
 
 	std::string getFEN();
+
+	bool isCheck();
 };
 
