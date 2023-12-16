@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "SFML/Graphics.hpp"
 
 struct PieceName
 {
@@ -43,8 +44,13 @@ enum MoveType {
 	TAKE
 };
 
-struct Move
+class Move
 {
+public:
+	Move();
+	Move(sf::Vector2i pos, MoveType moveType);
+	virtual ~Move();
+
 	sf::Vector2i position;
 	MoveType moveType;
 };

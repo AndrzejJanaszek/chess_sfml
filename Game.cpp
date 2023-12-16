@@ -4,6 +4,7 @@
 void Game::initVariables()
 {
 	this->window = nullptr;
+	//this->board = Board(&activePlayer);
 
 	//fonts
 	if (!this->fontUbuntuMono.loadFromFile("./fonts/Ubuntu_Mono/UbuntuMono-Regular.ttf")) {
@@ -54,7 +55,7 @@ void Game::initVariables()
 
 
 	//play set
-	this->activePlayer = ColorType::LIGHT;
+	//this->activePlayer = ColorType::LIGHT;
 	this->activePiece = sf::Vector2i(-1,-1);
 
 	//Set Texture to pieces
@@ -75,7 +76,7 @@ void Game::initWindow()
 	this->window->setFramerateLimit(60);
 }
 
-Game::Game()
+Game::Game() : board(&activePlayer)
 {
 	initVariables();
 	initWindow();
@@ -112,7 +113,7 @@ void Game::pollEvents() {
 					bool isMoveMade = false;
 					for (int i = 0; i < this->possibleMoves.size(); i++){
 						//Made a possible move!!!
-						if (possibleMoves[i].x == rowCast && possibleMoves[i].y == colCast) {
+						if (possibleMoves[i].position.x == rowCast && possibleMoves[i].position.y == colCast) {
 							isMoveMade = true;
 
 							board.makeMove(activePiece, possibleMoves[i]);
@@ -158,11 +159,21 @@ void Game::render()
 			}
 			
 			for (auto move : this->possibleMoves) {
-				if (move.x == row && move.y == col) {
-					sf::RectangleShape squareShape = sf::RectangleShape(sf::Vector2f(100, 100));
-					squareShape.setPosition(col * 100, row * 100);
-					squareShape.setFillColor(sf::Color(160, 20, 20));
-					this->window->draw(squareShape);
+				if (move.position.x == row && move.position.y == col) {
+					if ((row + col) % 2 == 0) {
+						//light
+						sf::RectangleShape squareShape = sf::RectangleShape(sf::Vector2f(100, 100));
+						squareShape.setPosition(col * 100, row * 100);
+						squareShape.setFillColor(sf::Color(200, 70, 50));
+						this->window->draw(squareShape);
+					}
+					else {
+						//dark
+						sf::RectangleShape squareShape = sf::RectangleShape(sf::Vector2f(100, 100));
+						squareShape.setPosition(col * 100, row * 100);
+						squareShape.setFillColor(sf::Color(160, 20, 20));
+						this->window->draw(squareShape);
+					}
 				}
 			}
 
@@ -178,7 +189,7 @@ void Game::render()
 				if (activePiece.x == row && activePiece.y == col) {
 					sf::RectangleShape squareShape = sf::RectangleShape(sf::Vector2f(100,100));
 					squareShape.setPosition(col * 100, row * 100);
-					squareShape.setFillColor(sf::Color(190, 20, 20));
+					squareShape.setFillColor(sf::Color(100, 130, 20));
 					this->window->draw(squareShape);
 				}
 

@@ -16,3 +16,13 @@ const std::string PieceName::EMPTY = "-";
 
 const std::string TextureName::DARK_SQUARE = "dark_square";
 const std::string TextureName::LIGHT_SQUARE = "light_square";
+
+Move::Move() {
+
+}
+Move::Move(sf::Vector2i pos, MoveType moveType) {
+	this->position = pos;
+	this->moveType = moveType;
+}
+Move::~Move() {
+}

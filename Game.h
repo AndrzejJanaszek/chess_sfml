@@ -18,7 +18,7 @@ private:
 	sf::Vector2i activePiece;
 	sf::Vector2i mousePosition;
 	//vector of possible squares to move
-	std::vector<sf::Vector2i> possibleMoves;
+	std::vector<Move> possibleMoves;
 
 	////game objects
 	//std::vector<sf::Sprite> pieceSprites;

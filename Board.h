@@ -21,14 +21,21 @@ private:
 	bool isMoveOnBoard(int row, int col);
 
 	sf::Vector2i enPassant;
+
+	ColorType* activePlayerPtr;
+
+	bool isLongCastlePossible;
+	bool isShortCastlePossible;
 public:
-	Board();
+	Board(ColorType* refActivePlayer);
 	virtual ~Board();
 
 	//functions
 	void initBoard();
 	Piece* at(int row, int col);
 	void print();
+
+	void setActivePlayer(ColorType* refActivePlayer);
 	
 	bool isFriendlyPiece(int row, int col, ColorType activeColor);
 	bool isEnemyPiece(int row, int col, ColorType activeColor);
@@ -40,9 +47,15 @@ public:
 	void clearEnPassant();
 
 	//row, col -> piece's cordinates
-	std::vector<sf::Vector2i> getPossibleMoves(int row, int col, ColorType activeColor);
+	std::vector<Move> getPossibleMoves(int row, int col, ColorType activeColor);
 
 	void makeMove(sf::Vector2i from, sf::Vector2i dest);
-	void makeMove(sf::Vector2i from, sf::Vector2i dest, MoveType moveType);
+	void makeMove(sf::Vector2i from, Move move);
+
+	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor, bool kingsFuture);
+	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor, bool kingsFuture);
+
+	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor);
+	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor);
 };
 
