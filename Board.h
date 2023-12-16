@@ -16,20 +16,24 @@ private:
 
 	// 0,0 1,0 2,0 ...
 	// [0] [1] [2] [3] [4] [5] [6] ... [n] 
+	
 	Piece** board;
+	std::string fen;
 	void initVariables();
 	bool isMoveOnBoard(int row, int col);
 
 	sf::Vector2i enPassant;
 
-	ColorType* activePlayerPtr;
+	//ColorType* activePlayerPtr;
+	ColorType activePlayer;
 
 	bool isLightKingCastlePossible;
 	bool isLightQueenCastlePossible;
 	bool isDarkKingCastlePossible;
 	bool isDarkQueenCastlePossible;
 public:
-	Board(ColorType* refActivePlayer);
+	//Board(ColorType* refActivePlayer);
+	Board(std::string fen);
 	virtual ~Board();
 
 	//functions
@@ -37,7 +41,9 @@ public:
 	Piece* at(int row, int col);
 	void print();
 
-	void setActivePlayer(ColorType* refActivePlayer);
+	void setActivePlayer(ColorType activePlayer);
+	ColorType getActivePlayer();
+	void swapActivePlayer();
 	
 	bool isFriendlyPiece(int row, int col, ColorType activeColor);
 	bool isEnemyPiece(int row, int col, ColorType activeColor);
@@ -59,5 +65,7 @@ public:
 
 	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor);
 	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor);
+
+	std::string getFEN();
 };
 

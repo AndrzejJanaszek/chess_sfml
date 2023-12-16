@@ -13,7 +13,7 @@ private:
 	Board board;
 
 	////game logic
-	ColorType activePlayer;
+	//ColorType activePlayer;
 	//// v(-1,-1) == null
 	sf::Vector2i activePiece;
 	sf::Vector2i mousePosition;

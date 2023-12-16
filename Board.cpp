@@ -2,14 +2,25 @@
 #include <string>
 #include <iostream>
 
-Board::Board(ColorType* refActivePlayer)
+//Board::Board(ColorType* refActivePlayer)
+//{
+//	initVariables();
+//	setActivePlayer(refActivePlayer);
+//
+//	this->initBoard();
+//	this->print();
+//}
+
+Board::Board(std::string fen)
 {
-	initVariables();
-	setActivePlayer(refActivePlayer);
+	this->fen = fen;
+	this->initVariables();
+	//setActivePlayer(refActivePlayer);
 
 	this->initBoard();
 	this->print();
 }
+
 
 Board::~Board()
 {
@@ -30,7 +41,7 @@ void Board::initVariables() {
 void Board::initBoard() {
 	//if empty: -
 	//const char empty = '-';
-	std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	//std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	//std::string fen = "1r2kbnr/pp1ppppp/2p2q2/1NP5/B2b4/1n3NQ1/PP1P1PPP/R3KB1R w KQk - 0 1";
 	//std::string fen = "3q4/8/6P1/PK1N1k2/PP1p4/p5np/4pP1p/5r2 w - - 0 1";<
 
@@ -78,10 +89,10 @@ void Board::initBoard() {
 
 	//FEN TURN STRING NR 2
 	if (fenSplited[1] == "w") {
-		*activePlayerPtr = ColorType::LIGHT;
+		this->activePlayer = ColorType::LIGHT;
 	}
 	else {
-		*activePlayerPtr = ColorType::DARK;
+		this->activePlayer = ColorType::DARK;
 	}
 
 	//FEN CASTLES STRING NR 3
@@ -127,8 +138,16 @@ void Board::print() {
 	std::cout << "\nKoniec Wypisu\n";
 }
 
-void Board::setActivePlayer(ColorType* refActivePlayer) {
-	this->activePlayerPtr = refActivePlayer;
+void Board::setActivePlayer(ColorType activePlayer) {
+	this->activePlayer = activePlayer;
+}
+
+ColorType Board::getActivePlayer() {
+	return this->activePlayer;
+}
+
+void Board::swapActivePlayer() {
+	this->activePlayer = this->activePlayer == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
 }
 
 bool Board::isFriendlyPiece(int row, int col, ColorType activeColor) {
@@ -403,6 +422,14 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 	}
 
+	ColorType _activePlayer = this->activePlayer;
+	Board afterBoard = Board(this->getFEN());
+	printf("afterBoard: %u\n", afterBoard.board);
+	printf("currentBoard: %u\n", this->board);
+
+	//afterBoard.setActivePlayer(&_activePlayer);
+	//Board afterBoard = Board(&_activePlayer);
+
 	/*for (auto posMove : possibleMoves) {
 		for (auto att) {
 
@@ -664,4 +691,48 @@ std::vector<sf::Vector2i> Board::getSquaresUnderAttack(ColorType attackerColor) 
 
 std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType activeColor) {
 	return getPieceView(row, col, activeColor, false);
+}
+
+std::string Board::getFEN() {
+	//FEN POSITION
+	std::string fenPosition = "";
+	for (int row = 0; row < 8; row++) {
+		int freeSquares = 0;
+		for (int col = 0; col < 8; col++) {
+			if (isFreeSquare(row, col) ){
+				freeSquares++;
+			}
+			else {
+				if (freeSquares > 0){
+					fenPosition += ::std::to_string(freeSquares);
+					freeSquares = 0;
+				}
+				fenPosition += this->at(row, col)->type;
+			}
+		}
+
+		//after each row
+		if (freeSquares > 0)
+			fenPosition += ::std::to_string(freeSquares);
+		if(row < 7)
+			fenPosition += "/";
+	}
+
+	std::string fenTurn = activePlayer == ColorType::LIGHT ? "w" : "b";
+
+	std::string fenCastling = "";
+	if (this->isLightKingCastlePossible) fenCastling += "K";
+	if (this->isLightQueenCastlePossible) fenCastling += "Q";
+	if (this->isDarkKingCastlePossible) fenCastling += "k";
+	if (this->isDarkQueenCastlePossible) fenCastling += "q";
+	if (fenCastling.length() == 0) fenCastling = "-";
+
+	//TODO
+	std::string fenEnPassant = "-";
+	//TODO
+	std::string fenHalfMove = "0";
+	//TODO
+	std::string fenFullMove = "0";
+
+	return (fenPosition + " " + fenTurn + " " + fenCastling + " " + fenEnPassant + " " + fenHalfMove + " " + fenFullMove);
 }

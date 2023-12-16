@@ -76,7 +76,7 @@ void Game::initWindow()
 	this->window->setFramerateLimit(60);
 }
 
-Game::Game() : board(&activePlayer)
+Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 {
 	initVariables();
 	initWindow();
@@ -104,9 +104,9 @@ void Game::pollEvents() {
 				int colCast = mousePosition.x / 100;
 
 				if (activePiece.x < 0) {
-					if (board.isFriendlyPiece(rowCast, colCast, activePlayer)) {
+					if (board.isFriendlyPiece(rowCast, colCast, board.getActivePlayer())) {
 						activePiece = sf::Vector2i(rowCast, colCast);
-						this->possibleMoves = board.getPossibleMoves(rowCast, colCast, activePlayer);
+						this->possibleMoves = board.getPossibleMoves(rowCast, colCast, board.getActivePlayer());
 					}
 				}
 				else {
@@ -119,7 +119,7 @@ void Game::pollEvents() {
 							board.makeMove(activePiece, possibleMoves[i]);
 							this->activePiece = sf::Vector2i(-1,-1);
 							possibleMoves.clear();
-							activePlayer = activePlayer == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
+							board.swapActivePlayer();
 							std::cout << "Make move!!!\n";
 
 							board.print();
