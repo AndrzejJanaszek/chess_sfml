@@ -500,6 +500,28 @@ void Board::makeMove(sf::Vector2i from, Move move) {
 		//TODO
 	}
 
+	//REMOVE CASTLING POSSIBILITY
+	if (this->at(from.x, from.y)->type == "K") {
+		this->isLightKingCastlePossible = false;
+		this->isLightQueenCastlePossible = false;
+	}
+	else if ( this->at(from.x, from.y)->type == "k") {
+		this->isDarkKingCastlePossible = false;
+		this->isDarkQueenCastlePossible = false;
+	}
+	else if (this->at(from.x, from.y)->type == "R") {
+		if(from.y == 0)
+			this->isLightQueenCastlePossible = false;
+		else
+			this->isLightKingCastlePossible = false;
+	}
+	else if (this->at(from.x, from.y)->type == "r") {
+		if(from.y == 0)
+			this->isDarkQueenCastlePossible = false;
+		else
+			this->isDarkKingCastlePossible = false;
+	}
+
 	makeMove(from, move.position);
 }
 
