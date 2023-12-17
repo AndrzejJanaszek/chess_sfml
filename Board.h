@@ -69,5 +69,6 @@ public:
 	std::string getFEN();
 
 	bool isCheck();
+	bool isGameEnd();
 };
 

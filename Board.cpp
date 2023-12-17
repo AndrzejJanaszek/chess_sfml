@@ -18,7 +18,7 @@ Board::Board(std::string fen)
 	//setActivePlayer(refActivePlayer);
 
 	this->initBoard();
-	this->print();
+	//this->print();
 }
 
 
@@ -434,7 +434,6 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	for (auto posMove : possibleMoves) {
 		Board afterBoard = Board(this->getFEN());
 		afterBoard.makeMove(sf::Vector2i(row, col), posMove);
-		afterBoard.print();
 		if (!afterBoard.isCheck()) {
 			possibleMovesFINAL.push_back(posMove);
 		}
@@ -482,7 +481,7 @@ void Board::makeMove(sf::Vector2i from, Move move) {
 	}
 	else if (MoveType::EN_PASSANT == move.moveType) {
 		//TODO
-		board[from.x * 8 + move.position.y] = nullptr;		
+		board[from.x * 8 + move.position.y] = nullptr;
 	}
 	else if(MoveType::QUEEN_CASTLE == move.moveType) {
 		//TODO
@@ -522,6 +521,9 @@ void Board::makeMove(sf::Vector2i from, Move move) {
 			this->isDarkKingCastlePossible = false;
 	}
 
+	if (move.moveType != MoveType::PAWN_LONG) {
+		clearEnPassant();
+	}
 	makeMove(from, move.position);
 }
 
@@ -772,4 +774,27 @@ bool Board::isCheck() {
 	}
 
 	return false;
+}
+
+bool Board::isGameEnd() {
+	//1. isCheck
+	//2. is there any possible move
+	this->print();
+	std::cout << activePlayer << "\n";
+
+	if (!isCheck()) return false;
+
+	//for each friendly piece
+	for (int row = 0; row < 8; row++) {
+		for (int col = 0; col < 8; col++) {
+			//check is there possible move
+			if (isFriendlyPiece(row, col, activePlayer)) {
+				if (getPossibleMoves(row, col, activePlayer).size() > 0 ) {
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
 }

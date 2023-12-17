@@ -96,7 +96,6 @@ void Game::pollEvents() {
 		if (this->ev.type == sf::Event::MouseButtonPressed) {
 			//klikniecie bierki
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-				std::cout << "Kilk left\n";
 				this->mousePosition = sf::Mouse::getPosition( *this->window );
 				
 				// position / square size
@@ -120,9 +119,13 @@ void Game::pollEvents() {
 							this->activePiece = sf::Vector2i(-1,-1);
 							possibleMoves.clear();
 							board.swapActivePlayer();
-							std::cout << "Make move!!!\n";
 
-							board.print();
+							std::cout << "Enpassant.x : " << board.getEnPassant().x << "\n";
+							if (this->board.isGameEnd()) {
+								std::cout << "Game over!!!\n";
+								std::string winner = this->board.getActivePlayer() == ColorType::DARK ? "White" : "Black";
+								std::cout << "Winner is: " << winner;
+							}
 						}
 					}
 
