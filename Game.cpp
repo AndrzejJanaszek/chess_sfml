@@ -120,7 +120,6 @@ void Game::pollEvents() {
 							possibleMoves.clear();
 							board.swapActivePlayer();
 
-							std::cout << "Enpassant.x : " << board.getEnPassant().x << "\n";
 							if (this->board.isGameEnd()) {
 								std::cout << "Game over!!!\n";
 								std::string winner = this->board.getActivePlayer() == ColorType::DARK ? "White" : "Black";

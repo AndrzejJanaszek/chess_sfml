@@ -70,5 +70,8 @@ public:
 
 	bool isCheck();
 	bool isGameEnd();
+
+	std::string getNotation(int row, int col);
+	sf::Vector2i getCords(std::string notation);
 };
 

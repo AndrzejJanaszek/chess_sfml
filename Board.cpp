@@ -798,3 +798,20 @@ bool Board::isGameEnd() {
 
 	return true;
 }
+
+
+std::string Board::getNotation(int row, int col) {
+	std::string notationStr = "";
+
+	notationStr += std::string(1,'a'+col);
+	notationStr += std::to_string(8-row);
+
+	return notationStr;
+}
+
+sf::Vector2i Board::getCords(std::string notation) {
+	int row = notation[1] - '0';
+	int col = notation[0] - 'a';
+
+	return sf::Vector2i(row, col);
+}
