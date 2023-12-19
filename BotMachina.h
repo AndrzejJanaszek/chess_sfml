@@ -1,5 +1,6 @@
 #pragma once
 #include "Constants.h"
+#include "Board.h"
 
 class BotMachina
 {
@@ -15,4 +16,6 @@ public:
 	virtual ~BotMachina();
 
 	Move getMove(std::string positionFEN);
+
+	double evalPosition(Board board);
 };

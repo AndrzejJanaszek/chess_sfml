@@ -22,3 +22,13 @@ ColorType Piece::getColor() {
 		return ColorType::LIGHT;
 	return ColorType::DARK;
 }
+
+std::string Piece::getCapitalType(){
+	//CAP	65 90	WHITE
+	//small 97 122	BLACK
+	if (65 <= type[0] && type[0] <= 90) {
+		//white
+		return this->type;
+	}
+	return std::string(1, this->type[0] - 32);
+}

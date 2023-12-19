@@ -15,5 +15,6 @@ public:
 	std::string type;
 
 	ColorType getColor();
+	std::string getCapitalType();
 };
 
