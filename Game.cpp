@@ -121,28 +121,25 @@ void Game::pollEvents() {
 					bool isMoveMade = false;
 					for (int i = 0; i < this->possibleMoves.size(); i++){
 						//Made a possible move!!!
-						if (possibleMoves[i].position.x == rowCast && possibleMoves[i].position.y == colCast) {
+						if (possibleMoves[i].destination.x == rowCast && possibleMoves[i].destination.y == colCast) {
 							isMoveMade = true;
 
-							board.makeMove(activePiece, possibleMoves[i]);
+							board.makeMove(possibleMoves[i]);
 							this->activePiece = sf::Vector2i(-1,-1);
 							possibleMoves.clear();
 							board.swapActivePlayer();
 
-							if (this->board.isGameEnd()) {
-								std::cout << "Game over!!!\n";
-								std::string winner = this->board.getActivePlayer() == ColorType::DARK ? "White" : "Black";
-								std::cout << "Winner is: " << winner;
-								break;
-							}
+							this->checkGameStatus();
 
 							//BOT MACHINA MOVE
-
-							BotMachina botMachina;
+							BotMachina botMachina(board.getActivePlayer());
 							Move botMove = botMachina.getMove(this->board.getFEN());
+							if (!botMove.isEmpty()) {
+								this->board.makeMove(botMove);
+							}
+							board.swapActivePlayer();
 
-							//this->board.makeMove();
-							
+							this->checkGameStatus();
 
 						}
 					}
@@ -189,7 +186,7 @@ void Game::render()
 			}
 			
 			for (auto move : this->possibleMoves) {
-				if (move.position.x == row && move.position.y == col) {
+				if (move.destination.x == row && move.destination.y == col) {
 					if ((row + col) % 2 == 0) {
 						//light
 						sf::RectangleShape squareShape = sf::RectangleShape(sf::Vector2f(100, 100));
@@ -240,4 +237,20 @@ void Game::render()
 bool Game::isRunning()
 {
 	return this->window->isOpen();
+}
+
+void Game::checkGameStatus() {
+	GameStatus gs = this->board.gameStatus();
+
+	if (gs == GameStatus::ON) {
+		//nothin
+	}
+	else if (gs == GameStatus::MAT) {
+		std::string winner = this->board.getActivePlayer() == ColorType::LIGHT ? "Czarny" : "Bia³y";
+		std::cout << "KONIEC GRY\nMAT\nWygra³: " << winner << " kolor" << std::endl;
+	}
+	else if (gs == GameStatus::PAT) {
+		std::string winner = this->board.getActivePlayer() == ColorType::LIGHT ? "Czarny" : "Bia³y";
+		std::cout << "KONIEC GRY\nPAT\n";
+	}
 }

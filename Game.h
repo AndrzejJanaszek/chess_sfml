@@ -42,5 +42,7 @@ public:
 	void render();
 
 	bool isRunning();
+
+	void checkGameStatus();
 };
 

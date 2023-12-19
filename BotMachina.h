@@ -3,15 +3,16 @@
 
 class BotMachina
 {
-private:
+//private:
+public:
 	ColorType color;
 
 	//future
 	unsigned int depth;
-public:
+
 	BotMachina();
-	~BotMachina();
+	BotMachina(ColorType color);
+	virtual ~BotMachina();
 
 	Move getMove(std::string positionFEN);
 };
-

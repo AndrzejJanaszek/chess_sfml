@@ -21,9 +21,20 @@ const std::string TextureName::SQUARE_SHADOW = "square_shadow";
 Move::Move() {
 
 }
-Move::Move(sf::Vector2i pos, MoveType moveType) {
-	this->position = pos;
+Move::Move(sf::Vector2i from, sf::Vector2i destination, MoveType moveType) {
+	this->from = from;
+	this->destination = destination;
 	this->moveType = moveType;
 }
 Move::~Move() {
+}
+
+void Move::setEmpty() {
+	this->moveType = MoveType::EMPTY;
+}
+
+bool Move::isEmpty() {
+	if (this->moveType == MoveType::EMPTY) return true;
+
+	return false;
 }

@@ -42,16 +42,27 @@ enum MoveType {
 	QUEEN_CASTLE,
 	PROMOTION,
 	NORMAL,
-	TAKE
+	TAKE,
+	EMPTY
+};
+
+enum GameStatus {
+	MAT,
+	PAT,
+	ON
 };
 
 class Move
 {
 public:
 	Move();
-	Move(sf::Vector2i pos, MoveType moveType);
+	Move(sf::Vector2i from, sf::Vector2i destination, MoveType moveType);
 	virtual ~Move();
 
-	sf::Vector2i position;
+	sf::Vector2i from;
+	sf::Vector2i destination;
 	MoveType moveType;
+
+	void setEmpty();
+	bool isEmpty();
 };

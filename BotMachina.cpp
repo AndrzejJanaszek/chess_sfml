@@ -1,16 +1,27 @@
 #include "BotMachina.h"
+#include "Constants.h"
+#include "Piece.h"
 #include "Board.h"
+#include <iostream>
 
-BotMachina::BotMachina()
+
+BotMachina::BotMachina() {
+	std::cout << "Def const\n";
+}
+
+BotMachina::BotMachina(ColorType color)
 {
+	this->color = color;
+	std::cout << "ColorType color const\n";
 }
 
 BotMachina::~BotMachina()
 {
+	std::cout << "~BotMachina\n";
 }
 
 //todo: getMove(unsigned int depth,...)
-std::pair<sf::Vector2i, Move> BotMachina::getMove(std::string positionFEN) {
+Move BotMachina::getMove(std::string positionFEN) {
 	//expected(positionFEN) [position] [botColor] ...
 	Board board(positionFEN);
 	std::vector<Move> allPossibleMoves;
@@ -28,5 +39,10 @@ std::pair<sf::Vector2i, Move> BotMachina::getMove(std::string positionFEN) {
 	}
 
 	//---
+	if (allPossibleMoves.size() == 0) {
+		Move emptyMove;
+		emptyMove.setEmpty();
+		return emptyMove;
+	}
 	return allPossibleMoves.at(rand() % allPossibleMoves.size());
 }

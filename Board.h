@@ -1,5 +1,7 @@
 #pragma once
 #include "Piece.h"
+#include "Board.h"
+#include <iostream>
 
 class Board
 {
@@ -58,7 +60,7 @@ public:
 	std::vector<Move> getPossibleMoves(int row, int col, ColorType activeColor);
 
 	void makeMove(sf::Vector2i from, sf::Vector2i dest);
-	void makeMove(sf::Vector2i from, Move move);
+	void makeMove(Move move);
 
 	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor, bool ignoreKing);
 	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor, bool ignoreKing);
@@ -69,7 +71,7 @@ public:
 	std::string getFEN();
 
 	bool isCheck();
-	bool isGameEnd();
+	GameStatus gameStatus();
 
 	std::string getNotation(int row, int col);
 	sf::Vector2i getCords(std::string notation);

@@ -21,7 +21,6 @@ Board::Board(std::string fen)
 	//this->print();
 }
 
-
 Board::~Board()
 {
 	delete[] board;
@@ -172,10 +171,12 @@ bool Board::isFreeSquare(int row, int col) {
 	return false;
 }
 
+//int row, int col => V2::from
 std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColor) {
 	std::vector<Move> possibleMoves;
 	if (isFreeSquare(row,col)) return possibleMoves;
 
+	sf::Vector2i from(row, col);
 	std::string pieceType = this->at(row, col)->type;
 	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
 	//pawn
@@ -192,28 +193,28 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		//if onBoard AND isEnemy
 		if ( this->isMoveOnBoard(attack1.x, attack1.y) ) {
 			if (enPassant.x == attack1.x && enPassant.y == attack1.y) {
-				possibleMoves.push_back(Move(attack1, MoveType::EN_PASSANT) );
+				possibleMoves.push_back(Move(from, attack1, MoveType::EN_PASSANT) );
 			}else if ( isEnemyPiece(attack1.x, attack1.y, activeColor)) {
-				possibleMoves.push_back(Move(attack1, MoveType::TAKE) );
+				possibleMoves.push_back(Move(from, attack1, MoveType::TAKE) );
 			}
 		}
 		if (this->isMoveOnBoard(attack2.x, attack2.y)) {
 			if (enPassant.x == attack2.x && enPassant.y == attack2.y) {
-				possibleMoves.push_back(Move(attack2, MoveType::EN_PASSANT));
+				possibleMoves.push_back(Move(from, attack2, MoveType::EN_PASSANT));
 			}else if (isEnemyPiece(attack2.x, attack2.y, activeColor)) {
-				possibleMoves.push_back(Move(attack2, MoveType::TAKE));
+				possibleMoves.push_back(Move(from, attack2, MoveType::TAKE));
 			}
 		}
 
 		//move1
 		//if onBoard AND isFreeSquare
 		if (this->isMoveOnBoard(move1.x, move1.y) && isFreeSquare(move1.x, move1.y)) {
-			possibleMoves.push_back(Move(move1, MoveType::NORMAL) );
+			possibleMoves.push_back(Move(from, move1, MoveType::NORMAL) );
 
 			//move2 PAWN_LONG
 			if (firstPawnRow == row) {
 				if (this->isMoveOnBoard(move2.x, move2.y) && isFreeSquare(move2.x, move2.y)) {
-					possibleMoves.push_back(Move(move2, MoveType::PAWN_LONG));
+					possibleMoves.push_back(Move(from, move2, MoveType::PAWN_LONG));
 				}
 			}
 		}
@@ -235,9 +236,9 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 			if (!isMoveOnBoard(moveT.x, moveT.y)) continue;
 
 			if (isFreeSquare(moveT.x, moveT.y)) {
-				possibleMoves.push_back(Move(moveT, MoveType::NORMAL));
+				possibleMoves.push_back(Move(from, moveT, MoveType::NORMAL));
 			}else if (isEnemyPiece(moveT.x, moveT.y, activeColor) ) {
-				possibleMoves.push_back(Move(moveT, MoveType::TAKE));
+				possibleMoves.push_back(Move(from, moveT, MoveType::TAKE));
 			}
 		}
 	}
@@ -256,13 +257,13 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
-					possibleMoves.push_back(Move(move, MoveType::NORMAL)); 
+					possibleMoves.push_back(Move(from, move, MoveType::NORMAL));
 				}
 				else if (this->isFriendlyPiece(move.x, move.y, activeColor)) {
 					break;
 				}
 				else if (this->isEnemyPiece(move.x, move.y, activeColor)) {
-					possibleMoves.push_back(Move(move,MoveType::TAKE));
+					possibleMoves.push_back(Move(from, move,MoveType::TAKE));
 
 					break;
 				}
@@ -287,13 +288,13 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
-					possibleMoves.push_back(Move(move, MoveType::NORMAL));
+					possibleMoves.push_back(Move(from, move, MoveType::NORMAL));
 				}
 				else if (this->isFriendlyPiece(move.x, move.y, activeColor)) {
 					break;
 				}
 				else if (this->isEnemyPiece(move.x, move.y, activeColor)) {
-					possibleMoves.push_back(Move(move, MoveType::TAKE));
+					possibleMoves.push_back(Move(from, move, MoveType::TAKE));
 
 					break;
 				}
@@ -322,13 +323,13 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
-					possibleMoves.push_back(Move(move, MoveType::NORMAL));
+					possibleMoves.push_back(Move(from, move, MoveType::NORMAL));
 				}
 				else if (this->isFriendlyPiece(move.x, move.y, activeColor)) {
 					break;
 				}
 				else if (this->isEnemyPiece(move.x, move.y, activeColor)) {
-					possibleMoves.push_back(Move(move, MoveType::TAKE));
+					possibleMoves.push_back(Move(from, move, MoveType::TAKE));
 
 					break;
 				}
@@ -366,7 +367,7 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 			//if not underAttack and is not friendly piece
 			if (!containsMove && !isFriendlyPiece(move.x, move.y, activeColor)) {
 				//after move will king be under attack
-				possibleMoves.push_back(Move(move, MoveType::NORMAL));
+				possibleMoves.push_back(Move(from, move, MoveType::NORMAL));
 			}
 		}
 		
@@ -412,11 +413,11 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 		//is king castle possible FINAL
 		if (kingPossible && kingFree && !kingSideAttack) {
-			possibleMoves.push_back(Move(sf::Vector2i(row,4+2),MoveType::KING_CASTLE));
+			possibleMoves.push_back(Move(from, sf::Vector2i(row,4+2),MoveType::KING_CASTLE));
 		}
 		//is queen castle possible FINAL
 		if (queenPossible && queenFree && !queenSideAttack) {
-			possibleMoves.push_back(Move(sf::Vector2i(row, 4-2), MoveType::QUEEN_CASTLE));
+			possibleMoves.push_back(Move(from, sf::Vector2i(row, 4-2), MoveType::QUEEN_CASTLE));
 		}
 
 
@@ -433,7 +434,7 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	std::vector<Move> possibleMovesFINAL;
 	for (auto posMove : possibleMoves) {
 		Board afterBoard = Board(this->getFEN());
-		afterBoard.makeMove(sf::Vector2i(row, col), posMove);
+		afterBoard.makeMove(posMove);
 		if (!afterBoard.isCheck()) {
 			possibleMovesFINAL.push_back(posMove);
 		}
@@ -472,27 +473,27 @@ void Board::makeMove(sf::Vector2i from, sf::Vector2i dest) {
 	board[from.x * 8 + from.y] = nullptr;
 }
 
-void Board::makeMove(sf::Vector2i from, Move move) {
+void Board::makeMove(Move move) {
 	if (MoveType::PAWN_LONG == move.moveType) {
-		int targetRow = (from.x - move.position.x) / 2;
-		this->enPassant = sf::Vector2i(from.x-targetRow,from.y);
+		int targetRow = (move.from.x - move.destination.x) / 2;
+		this->enPassant = sf::Vector2i(move.from.x-targetRow, move.from.y);
 		//1 -> 3 3-1=2 / 2 = 1   start
 		//6 -> 4 4-6=-2 / 2 = -1
 	}
 	else if (MoveType::EN_PASSANT == move.moveType) {
 		//TODO
-		board[from.x * 8 + move.position.y] = nullptr;
+		board[move.from.x * 8 + move.destination.y] = nullptr;
 	}
 	else if(MoveType::QUEEN_CASTLE == move.moveType) {
 		//TODO
-		sf::Vector2i fromRook = sf::Vector2i(from.x, 0);
-		sf::Vector2i destRook = sf::Vector2i(from.x, move.position.y+1);
+		sf::Vector2i fromRook = sf::Vector2i(move.from.x, 0);
+		sf::Vector2i destRook = sf::Vector2i(move.from.x, move.destination.y+1);
 		makeMove(fromRook, destRook);
 	}
 	else if (MoveType::KING_CASTLE == move.moveType) {
 		//TODO
-		sf::Vector2i fromRook = sf::Vector2i(from.x, 7);
-		sf::Vector2i destRook = sf::Vector2i(from.x, move.position.y - 1);
+		sf::Vector2i fromRook = sf::Vector2i(move.from.x, 7);
+		sf::Vector2i destRook = sf::Vector2i(move.from.x, move.destination.y - 1);
 		makeMove(fromRook, destRook);
 	}
 	else if (MoveType::PROMOTION == move.moveType) {
@@ -500,22 +501,22 @@ void Board::makeMove(sf::Vector2i from, Move move) {
 	}
 
 	//REMOVE CASTLING POSSIBILITY
-	if (this->at(from.x, from.y)->type == "K") {
+	if (this->at(move.from.x, move.from.y)->type == "K") {
 		this->isLightKingCastlePossible = false;
 		this->isLightQueenCastlePossible = false;
 	}
-	else if ( this->at(from.x, from.y)->type == "k") {
+	else if ( this->at(move.from.x, move.from.y)->type == "k") {
 		this->isDarkKingCastlePossible = false;
 		this->isDarkQueenCastlePossible = false;
 	}
-	else if (this->at(from.x, from.y)->type == "R") {
-		if(from.y == 0)
+	else if (this->at(move.from.x, move.from.y)->type == "R") {
+		if(move.from.y == 0)
 			this->isLightQueenCastlePossible = false;
 		else
 			this->isLightKingCastlePossible = false;
 	}
-	else if (this->at(from.x, from.y)->type == "r") {
-		if(from.y == 0)
+	else if (this->at(move.from.x, move.from.y)->type == "r") {
+		if(move.from.y == 0)
 			this->isDarkQueenCastlePossible = false;
 		else
 			this->isDarkKingCastlePossible = false;
@@ -524,7 +525,7 @@ void Board::makeMove(sf::Vector2i from, Move move) {
 	if (move.moveType != MoveType::PAWN_LONG) {
 		clearEnPassant();
 	}
-	makeMove(from, move.position);
+	makeMove(move.from, move.destination);
 }
 
 //get ALL squares under attack
@@ -776,13 +777,11 @@ bool Board::isCheck() {
 	return false;
 }
 
-bool Board::isGameEnd() {
+GameStatus Board::gameStatus() {
 	//1. isCheck
 	//2. is there any possible move
 	this->print();
 	std::cout << activePlayer << "\n";
-
-	if (!isCheck()) return false;
 
 	//for each friendly piece
 	for (int row = 0; row < 8; row++) {
@@ -790,13 +789,16 @@ bool Board::isGameEnd() {
 			//check is there possible move
 			if (isFriendlyPiece(row, col, activePlayer)) {
 				if (getPossibleMoves(row, col, activePlayer).size() > 0 ) {
-					return false;
+					return GameStatus::ON;
 				}
 			}
 		}
 	}
 
-	return true;
+	if (isCheck())
+		return GameStatus::MAT;
+	else
+		return GameStatus::PAT;
 }
 
 
