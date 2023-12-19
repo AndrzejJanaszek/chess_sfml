@@ -26,6 +26,7 @@ struct TextureName : PieceName
 {
 	static const std::string DARK_SQUARE;
 	static const std::string LIGHT_SQUARE;
+	static const std::string SQUARE_SHADOW;
 };
 
 enum ColorType

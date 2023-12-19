@@ -1,5 +1,6 @@
-#include "Game.h"
 #include <iostream>
+#include "Game.h"
+#include "BotMachina.h"
 
 void Game::initVariables()
 {
@@ -45,6 +46,14 @@ void Game::initVariables()
 		this->textures[piecesNames[i]] = piece_texture;
 	}
 	delete[] piecesNames;
+
+	//square shadow texture
+	sf::Texture square_shadow_texture;
+	
+	if (!square_shadow_texture.loadFromFile("./textures/square_shadow100.png")) {
+		std::cout << "Error: Failed to load black ./textures/square_shadow100.png";
+	}
+	this->textures["square_shadow"] = square_shadow_texture;
 
 	//Shapes
 	//textures[TextureName::DARK_SQUARE] = darkSquare;
@@ -124,7 +133,17 @@ void Game::pollEvents() {
 								std::cout << "Game over!!!\n";
 								std::string winner = this->board.getActivePlayer() == ColorType::DARK ? "White" : "Black";
 								std::cout << "Winner is: " << winner;
+								break;
 							}
+
+							//BOT MACHINA MOVE
+
+							BotMachina botMachina;
+							Move botMove = botMachina.getMove(this->board.getFEN());
+
+							//this->board.makeMove();
+							
+
 						}
 					}
 
@@ -152,12 +171,21 @@ void Game::render()
 		for (int col = 0; col < 8; col++) {
 			//draw board (dark and ligth squares)
 			if ((row + col) % 2 == 0) {
+				//light
 				lightSquare.setPosition(col * 100, row * 100);
 				this->window->draw(this->lightSquare);
 			}
 			else {
+				//dark
 				darkSquare.setPosition(col * 100, row * 100);
 				this->window->draw(this->darkSquare);
+
+				sf::Sprite squareShadowSprite;
+				squareShadowSprite.setScale(1,1);
+				squareShadowSprite.setPosition(col * 100, row * 100);
+				squareShadowSprite.setTexture(this->textures[TextureName::SQUARE_SHADOW]);
+				squareShadowSprite.setColor(sf::Color(255,255,255,80));
+				this->window->draw(squareShadowSprite);
 			}
 			
 			for (auto move : this->possibleMoves) {

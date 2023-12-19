@@ -16,6 +16,7 @@ const std::string PieceName::EMPTY = "-";
 
 const std::string TextureName::DARK_SQUARE = "dark_square";
 const std::string TextureName::LIGHT_SQUARE = "light_square";
+const std::string TextureName::SQUARE_SHADOW = "square_shadow";
 
 Move::Move() {
 
