@@ -58,6 +58,8 @@ public:
 
 	//row, col -> piece's cordinates
 	std::vector<Move> getPossibleMoves(int row, int col, ColorType activeColor);
+	std::vector<Move> getAllPossibleMoves(ColorType activeColor);
+
 
 	void makeMove(sf::Vector2i from, sf::Vector2i dest);
 	void makeMove(Move move);

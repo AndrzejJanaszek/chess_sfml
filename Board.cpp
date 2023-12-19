@@ -817,3 +817,20 @@ sf::Vector2i Board::getCords(std::string notation) {
 
 	return sf::Vector2i(row, col);
 }
+
+std::vector<Move> Board::getAllPossibleMoves(ColorType activeColor) {
+	std::vector<Move> allPossibleMoves;
+
+	for (int row = 0; row < 8; row++) {
+		for (int col = 0; col < 8; col++) {
+			//if ally (friendly piece)
+			if (this->at(row, col) != nullptr && this->at(row, col)->getColor() == activeColor) {
+				std::vector<Move> piecePossibleMoves = this->getPossibleMoves(row, col, activeColor);
+				//combine (insert into all moves) all moves and piece moves
+				allPossibleMoves.insert(allPossibleMoves.begin(), piecePossibleMoves.begin(), piecePossibleMoves.end());
+			}
+		}
+	}
+
+	return allPossibleMoves;
+}

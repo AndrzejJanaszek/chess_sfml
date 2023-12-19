@@ -24,18 +24,18 @@ BotMachina::~BotMachina()
 Move BotMachina::getMove(std::string positionFEN) {
 	//expected(positionFEN) [position] [botColor] ...
 	Board board(positionFEN);
-	std::vector<Move> allPossibleMoves;
+	std::vector<Move> allPossibleMoves = board.getAllPossibleMoves(color);
 
-	for (int row = 0; row < 8; row++) {
-		for (int col = 0; col < 8; col++) {
-			//if bot's piece
-			if (board.at(row, col) != nullptr && board.at(row, col)->getColor() == color) {
-				std::vector<Move> piecePossibleMoves = board.getPossibleMoves(row, col, this->color);
-				//combine (insert into all moves) all moves and piece moves
-				allPossibleMoves.insert(allPossibleMoves.begin(), piecePossibleMoves.begin(), piecePossibleMoves.end());
-			}	
-		}
-	}
+	//for (int row = 0; row < 8; row++) {
+	//	for (int col = 0; col < 8; col++) {
+	//		//if bot's piece
+	//		if (board.at(row, col) != nullptr && board.at(row, col)->getColor() == color) {
+	//			std::vector<Move> piecePossibleMoves = board.getPossibleMoves(row, col, this->color);
+	//			//combine (insert into all moves) all moves and piece moves
+	//			allPossibleMoves.insert(allPossibleMoves.begin(), piecePossibleMoves.begin(), piecePossibleMoves.end());
+	//		}	
+	//	}
+	//}
 
 	//if no moves possible
 	if (allPossibleMoves.size() == 0) {
@@ -70,6 +70,21 @@ Move BotMachina::getMove(std::string positionFEN) {
 		//evaluatedMoves.push_back(std::pair<double, Move>(evalValue, move));
 	}
 	
+	//{
+	//	board.makeMove(bestMove);
+
+	//	Move enemyMove = getMove(board.getFEN());
+	//	board.makeMove(enemyMove);
+
+	//	Move myMove = getMove(board.getFEN()); // best z depth 2
+	//}
+
+	//const int DEPTH = 2;
+	//for (int i = 0; i < DEPTH; i++) {
+	//	//mój
+	//	Move myMove = getMove(positionFEN);
+	//}
+
 	return bestMove;
 }
 
@@ -91,16 +106,34 @@ double BotMachina::evalPosition(Board board) {
 		for (int col = 0; col < 8; col++) {
 			if (board.at(row, col) == nullptr) continue;
 			
+			//each piece
 			std::string pieceCapitalType = board.at(row, col)->getCapitalType();
 			int valueMultiplier = board.at(row, col)->getColor() == ColorType::LIGHT ? 1 : -1;
 			if (pieceValue.count(pieceCapitalType)) {
 				double value = pieceValue.at(pieceCapitalType);
+				value *= VALUE_MAP::getValueAtPositioin(row, col, pieceCapitalType, color);
 				evalPoints += value * valueMultiplier;
 			}
 		}
 	}
 
 	return evalPoints;
+}
+
+Move BotMachina::depthSearch(std::string positionFEN, int depth) {
+	if (depth == 1) {
+		//trywialny
+	}
+	else {
+		Board board(positionFEN); 
+		std::vector<Move> possibleMoves = board.getAllPossibleMoves(this->color);
+
+		for (auto move : possibleMoves) {
+			board.makeMove(move);
+			std::vector<Move> possibleMoves2 = board.getAllPossibleMoves(this->color);
+			board.initBoard(); //clear (undo move / back to original state) 
+		}
+	}
 }
 
 //STEP 1
