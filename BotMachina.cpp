@@ -39,7 +39,7 @@ Move BotMachina::getMove(std::string positionFEN) {
 	for (Move move : allPossibleMoves) {
 		board.makeMove(move);
 		int colorMultiplier = color == ColorType::LIGHT ? 1 : -1;
-		double evalValue = this->evalPosition( Board( board.getFEN() ) ) * colorMultiplier;
+		double evalValue = this->evalPosition( board.getFEN() ) * colorMultiplier;
 
 		//set first max
 		if (first) {
@@ -59,10 +59,11 @@ Move BotMachina::getMove(std::string positionFEN) {
 	return bestMove;
 }
 
-double BotMachina::evalPosition(Board board) {
+double BotMachina::evalPosition(std::string positionFEN) {
 	// >0	white +
 	// ==0	equal 0
 	// <0	black -
+	Board board(positionFEN);
 	std::map<std::string, double> pieceValue;
 	pieceValue["P"] = 1;
 	pieceValue["B"] = 3;
@@ -80,6 +81,7 @@ double BotMachina::evalPosition(Board board) {
 			//each piece
 			std::string pieceCapitalType = board.at(row, col)->getCapitalType();
 			int valueMultiplier = board.at(row, col)->getColor() == ColorType::LIGHT ? 1 : -1;
+
 			if (pieceValue.count(pieceCapitalType)) {
 				double value = pieceValue.at(pieceCapitalType);
 				value *= VALUE_MAP::getValueAtPositioin(row, col, pieceCapitalType, color);
@@ -106,14 +108,17 @@ Move BotMachina::depthSearch(std::string positionFEN, int depth) {
 		for (auto move : possibleMoves) {
 			board.makeMove(move);
 			std::vector<Move> possibleMovesEnemy = board.getAllPossibleMoves();
+
 			for (auto enemyMove : possibleMovesEnemy) {
+				board.makeMove(enemyMove);
 				//odpowiedŸ na ruch przeciwnika
 				//my* best reaction/response on enemy /\ move
 				Move myResponse = this->depthSearch(board.getFEN(), depth - 1);
 				board.makeMove(myResponse);
 				//push_back FINAL EVALUATION
-				finalMovesEvaluations.push_back(evalPosition(board));
-				//undo move
+				finalMovesEvaluations.push_back(evalPosition(board.getFEN()));
+				//undo moves (my response and enemy move)
+				board.undoMove();
 				board.undoMove();
 			}
 			board.undoMove(); //clear (undo move / back to original state) 

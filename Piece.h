@@ -11,7 +11,6 @@ public:
 	Piece(std::string fenType);
 	~Piece();
 
-	sf::Sprite sprite;
 	std::string type;
 
 	ColorType getColor();

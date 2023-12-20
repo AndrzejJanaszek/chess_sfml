@@ -82,7 +82,7 @@ void Board::initBoard() {
 		board[j] = new Piece( std::string(1, fenPosition[i]) );
 		int row = j / 8;
 		int col = j % 8;
-		board[j]->sprite.setPosition(100 * col, 100 * row);
+		//board[j]->sprite.setPosition(100 * col, 100 * row);
 		j++;
 	}
 
@@ -181,7 +181,7 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
 	//pawn
 	if (pieceType == "P") {
-		int firstPawnRow = activeColor == ColorType::LIGHT ? 6 : 1;
+		int firstPawnRow = this->activePlayer == ColorType::LIGHT ? 6 : 1;
 		//for pawn
 		int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
 		sf::Vector2i attack1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1);
@@ -506,7 +506,7 @@ void Board::makeMove(Move move) {
 	}
 
 	//REMOVE CASTLING POSSIBILITY
-	this->print();
+	//Piece* ppp = this->at(move.from.x, move.from.y);
 	if (this->at(move.from.x, move.from.y)->type == "K") {
 		this->isLightKingCastlePossible = false;
 		this->isLightQueenCastlePossible = false;
@@ -846,6 +846,7 @@ std::vector<Move> Board::getAllPossibleMoves() {
 void Board::undoMove() {
 	if (this->fenHistory.size() > 0) {
 		this->fen = this->fenHistory.back();
+		this->fenHistory.pop_back();
 		this->initBoard();
 	}
 }

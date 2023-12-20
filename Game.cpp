@@ -67,16 +67,6 @@ void Game::initVariables()
 	//this->activePlayer = ColorType::LIGHT;
 	this->activePiece = sf::Vector2i(-1,-1);
 
-	//Set Texture to pieces
-	for (int row = 0; row < 8; row++) {
-		for (int col = 0; col < 8; col++) {
-			//draw pieces
-			if (this->board.at(row, col) != nullptr) {
-				std::string pieceStr = this->board.at(row, col)->type;
-				this->board.at(row, col)->sprite.setTexture(this->textures[pieceStr]);
-			}
-		}
-	}
 }
 
 void Game::initWindow()
@@ -178,6 +168,7 @@ void Game::render()
 				darkSquare.setPosition(col * 100, row * 100);
 				this->window->draw(this->darkSquare);
 
+				//shadow
 				sf::Sprite squareShadowSprite;
 				squareShadowSprite.setScale(1,1);
 				squareShadowSprite.setPosition(col * 100, row * 100);
@@ -221,8 +212,11 @@ void Game::render()
 					this->window->draw(squareShape);
 				}
 
-				this->board.at(row, col)->sprite.setPosition(col * 100, row * 100);
-				this->window->draw(this->board.at(row, col)->sprite);
+				sf::Sprite pieceSprite;
+				pieceSprite.setPosition(col * 100, row * 100);
+				pieceSprite.setTexture(this->textures[this->board.at(row, col)->type]);
+				pieceSprite.setScale(100 / 256.0f, 100 / 256.0f);
+				this->window->draw(pieceSprite);
 			}
 		}
 	}
