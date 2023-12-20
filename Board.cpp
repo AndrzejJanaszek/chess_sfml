@@ -48,13 +48,13 @@ void Board::initBoard() {
 
 	//split fen by ' ' into 6 strings
 	std::string chunkStr = "";
-	for (int i = 0; i < fen.length(); i++) {
-		if (fen[i] == ' ' || i == fen.length()-1) {
+	for (int i = 0; i < this->fen.length(); i++) {
+		if (this->fen[i] == ' ' || i == this->fen.length()-1) {
 			fenSplited.push_back(chunkStr);
 			chunkStr = "";
 		}
 		else {
-			chunkStr += fen[i];
+			chunkStr += this->fen[i];
 		}
 	}
 
@@ -126,7 +126,7 @@ void Board::print() {
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
 			if (this->board[i * 8 + j] != nullptr) {
-				std::cout << this->board[i*8+j]->type;
+				std::cout << this->board[i*8 + j]->type;
 			}
 			else {
 				std::cout << ".";
@@ -471,6 +471,11 @@ void Board::clearEnPassant() {
 void Board::makeMove(sf::Vector2i from, sf::Vector2i dest) {
 	board[dest.x * 8 + dest.y] = this->at(from.x, from.y);
 	board[from.x * 8 + from.y] = nullptr;
+
+	this->fenHistory.push_back(this->fen);
+	this->fen = this->getFEN();
+
+	this->swapActivePlayer();
 }
 
 void Board::makeMove(Move move) {
@@ -501,6 +506,7 @@ void Board::makeMove(Move move) {
 	}
 
 	//REMOVE CASTLING POSSIBILITY
+	this->print();
 	if (this->at(move.from.x, move.from.y)->type == "K") {
 		this->isLightKingCastlePossible = false;
 		this->isLightQueenCastlePossible = false;
@@ -818,14 +824,14 @@ sf::Vector2i Board::getCords(std::string notation) {
 	return sf::Vector2i(row, col);
 }
 
-std::vector<Move> Board::getAllPossibleMoves(ColorType activeColor) {
+std::vector<Move> Board::getAllPossibleMoves() {
 	std::vector<Move> allPossibleMoves;
 
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
 			//if ally (friendly piece)
-			if (this->at(row, col) != nullptr && this->at(row, col)->getColor() == activeColor) {
-				std::vector<Move> piecePossibleMoves = this->getPossibleMoves(row, col, activeColor);
+			if (this->at(row, col) != nullptr && this->at(row, col)->getColor() == this->activePlayer) {
+				std::vector<Move> piecePossibleMoves = this->getPossibleMoves(row, col, this->activePlayer);
 				//combine (insert into all moves) all moves and piece moves
 				allPossibleMoves.insert(allPossibleMoves.begin(), piecePossibleMoves.begin(), piecePossibleMoves.end());
 			}
@@ -833,4 +839,13 @@ std::vector<Move> Board::getAllPossibleMoves(ColorType activeColor) {
 	}
 
 	return allPossibleMoves;
+}
+
+//TODO do zmiany bo jest tragicznie napisane. prev fen => historia
+//przypadek prevFen == ""
+void Board::undoMove() {
+	if (this->fenHistory.size() > 0) {
+		this->fen = this->fenHistory.back();
+		this->initBoard();
+	}
 }

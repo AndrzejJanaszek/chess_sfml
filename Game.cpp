@@ -127,17 +127,18 @@ void Game::pollEvents() {
 							board.makeMove(possibleMoves[i]);
 							this->activePiece = sf::Vector2i(-1,-1);
 							possibleMoves.clear();
-							board.swapActivePlayer();
+							//board.swapActivePlayer();
 
 							this->checkGameStatus();
 
 							//BOT MACHINA MOVE
 							BotMachina botMachina(board.getActivePlayer());
-							Move botMove = botMachina.getMove(this->board.getFEN());
+							//Move botMove = botMachina.getMove(this->board.getFEN());
+							Move botMove = botMachina.depthSearch(this->board.getFEN(), 1);
 							if (!botMove.isEmpty()) {
 								this->board.makeMove(botMove);
 							}
-							board.swapActivePlayer();
+							//board.swapActivePlayer();
 
 							this->checkGameStatus();
 

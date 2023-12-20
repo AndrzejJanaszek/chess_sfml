@@ -21,6 +21,7 @@ private:
 	
 	Piece** board;
 	std::string fen;
+	std::vector<std::string> fenHistory;
 	void initVariables();
 	bool isMoveOnBoard(int row, int col);
 
@@ -58,7 +59,7 @@ public:
 
 	//row, col -> piece's cordinates
 	std::vector<Move> getPossibleMoves(int row, int col, ColorType activeColor);
-	std::vector<Move> getAllPossibleMoves(ColorType activeColor);
+	std::vector<Move> getAllPossibleMoves();
 
 
 	void makeMove(sf::Vector2i from, sf::Vector2i dest);
@@ -77,5 +78,7 @@ public:
 
 	std::string getNotation(int row, int col);
 	sf::Vector2i getCords(std::string notation);
+
+	void undoMove();
 };
 

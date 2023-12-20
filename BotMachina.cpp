@@ -24,18 +24,7 @@ BotMachina::~BotMachina()
 Move BotMachina::getMove(std::string positionFEN) {
 	//expected(positionFEN) [position] [botColor] ...
 	Board board(positionFEN);
-	std::vector<Move> allPossibleMoves = board.getAllPossibleMoves(color);
-
-	//for (int row = 0; row < 8; row++) {
-	//	for (int col = 0; col < 8; col++) {
-	//		//if bot's piece
-	//		if (board.at(row, col) != nullptr && board.at(row, col)->getColor() == color) {
-	//			std::vector<Move> piecePossibleMoves = board.getPossibleMoves(row, col, this->color);
-	//			//combine (insert into all moves) all moves and piece moves
-	//			allPossibleMoves.insert(allPossibleMoves.begin(), piecePossibleMoves.begin(), piecePossibleMoves.end());
-	//		}	
-	//	}
-	//}
+	std::vector<Move> allPossibleMoves = board.getAllPossibleMoves();
 
 	//if no moves possible
 	if (allPossibleMoves.size() == 0) {
@@ -43,8 +32,7 @@ Move BotMachina::getMove(std::string positionFEN) {
 		emptyMove.setEmpty();
 		return emptyMove;
 	}
-	
-	//std::vector< std::pair<double, Move> > evaluatedMoves;
+
 	Move bestMove;
 	double bestEval = 0;
 	bool first = true;
@@ -65,25 +53,8 @@ Move BotMachina::getMove(std::string positionFEN) {
 			bestMove = move;
 		}
 		
-		board.initBoard(); // TODO // na razie reset przez inicjalizacje
-
-		//evaluatedMoves.push_back(std::pair<double, Move>(evalValue, move));
+		board.undoMove(); // TODO // na razie reset przez inicjalizacje
 	}
-	
-	//{
-	//	board.makeMove(bestMove);
-
-	//	Move enemyMove = getMove(board.getFEN());
-	//	board.makeMove(enemyMove);
-
-	//	Move myMove = getMove(board.getFEN()); // best z depth 2
-	//}
-
-	//const int DEPTH = 2;
-	//for (int i = 0; i < DEPTH; i++) {
-	//	//mój
-	//	Move myMove = getMove(positionFEN);
-	//}
 
 	return bestMove;
 }
@@ -123,16 +94,38 @@ double BotMachina::evalPosition(Board board) {
 Move BotMachina::depthSearch(std::string positionFEN, int depth) {
 	if (depth == 1) {
 		//trywialny
+		return getMove(positionFEN);
 	}
 	else {
+		ColorType enemyColor = this->color == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
 		Board board(positionFEN); 
-		std::vector<Move> possibleMoves = board.getAllPossibleMoves(this->color);
+		std::vector<Move> possibleMoves = board.getAllPossibleMoves();
+		std::vector<double> finalMovesEvaluations;
 
+		//enemy response
 		for (auto move : possibleMoves) {
 			board.makeMove(move);
-			std::vector<Move> possibleMoves2 = board.getAllPossibleMoves(this->color);
-			board.initBoard(); //clear (undo move / back to original state) 
+			std::vector<Move> possibleMovesEnemy = board.getAllPossibleMoves();
+			for (auto enemyMove : possibleMovesEnemy) {
+				//odpowiedŸ na ruch przeciwnika
+				//my* best reaction/response on enemy /\ move
+				Move myResponse = this->depthSearch(board.getFEN(), depth - 1);
+				board.makeMove(myResponse);
+				//push_back FINAL EVALUATION
+				finalMovesEvaluations.push_back(evalPosition(board));
+				//undo move
+				board.undoMove();
+			}
+			board.undoMove(); //clear (undo move / back to original state) 
 		}
+
+		int bestIndex = 0;
+		for (int i = 0; i < possibleMoves.size(); i++) {
+			if (finalMovesEvaluations[bestIndex] < finalMovesEvaluations[i])
+				bestIndex = i;
+		}
+
+		return possibleMoves[bestIndex];
 	}
 }
 
