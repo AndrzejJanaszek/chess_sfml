@@ -182,6 +182,7 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	//pawn
 	if (pieceType == "P") {
 		int firstPawnRow = this->activePlayer == ColorType::LIGHT ? 6 : 1;
+		int promotionRow = this->activePlayer == ColorType::LIGHT ? 1 : 6;
 		//for pawn
 		int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
 		sf::Vector2i attack1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1);
@@ -189,12 +190,17 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		sf::Vector2i move1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col);
 		sf::Vector2i move2= sf::Vector2i(row + 2 * colorDirectionMultiplier, col);
 
+		
+
 		//attacks
 		//if onBoard AND isEnemy
 		if ( this->isMoveOnBoard(attack1.x, attack1.y) ) {
 			if (enPassant.x == attack1.x && enPassant.y == attack1.y) {
 				possibleMoves.push_back(Move(from, attack1, MoveType::EN_PASSANT) );
 			}else if ( isEnemyPiece(attack1.x, attack1.y, activeColor)) {
+				if (row == promotionRow)
+					possibleMoves.push_back(Move(from, attack1, MoveType::PROMOTION));
+				else
 				possibleMoves.push_back(Move(from, attack1, MoveType::TAKE) );
 			}
 		}
@@ -202,6 +208,9 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 			if (enPassant.x == attack2.x && enPassant.y == attack2.y) {
 				possibleMoves.push_back(Move(from, attack2, MoveType::EN_PASSANT));
 			}else if (isEnemyPiece(attack2.x, attack2.y, activeColor)) {
+				if (row == promotionRow)
+					possibleMoves.push_back(Move(from, attack2, MoveType::PROMOTION));
+				else
 				possibleMoves.push_back(Move(from, attack2, MoveType::TAKE));
 			}
 		}
@@ -209,6 +218,9 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		//move1
 		//if onBoard AND isFreeSquare
 		if (this->isMoveOnBoard(move1.x, move1.y) && isFreeSquare(move1.x, move1.y)) {
+			if (row == promotionRow)
+				possibleMoves.push_back(Move(from, move1, MoveType::PROMOTION));
+			else
 			possibleMoves.push_back(Move(from, move1, MoveType::NORMAL) );
 
 			//move2 PAWN_LONG
@@ -504,6 +516,12 @@ void Board::makeMove(Move move) {
 	}
 	else if (MoveType::PROMOTION == move.moveType) {
 		//TODO
+		if (this->at(move.from.x, move.from.y)->getColor() == LIGHT) {
+			this->at(move.from.x, move.from.y)->type = "Q";
+		}
+		else {
+			this->at(move.from.x, move.from.y)->type = "q";
+		}
 	}
 
 	//REMOVE CASTLING POSSIBILITY
@@ -532,7 +550,9 @@ void Board::makeMove(Move move) {
 	if (move.moveType != MoveType::PAWN_LONG) {
 		clearEnPassant();
 	}
+	this->print();
 	makeMove(move.from, move.destination);
+	//this->print();
 	this->swapActivePlayer();
 }
 
@@ -805,14 +825,33 @@ GameStatus Board::gameStatus() {
 	
 	int piece = 0;
 	int BN = 0;
+
+	std::vector<Move> allPosMoves = getAllPossibleMoves();
+
+	if (allPosMoves.size() == 0) {
+		if (isCheck())
+			return GameStatus::MAT;
+		else
+			return GameStatus::PAT;
+	}
+
+
+
 	//for each friendly piece
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
-			//check is there possible move
 			if (this->isFreeSquare(row, col))continue;
 
 			if (this->at(row, col)->getCapitalType() != "K") {
 				piece++;
+				if (piece > 1)
+					return GameStatus::ON;
+			}
+
+			//check is there possible move
+
+			//if (this->at(row, col)->getCapitalType() != "K") {
+			/*	piece++;
 				if(piece > 1)
 					return GameStatus::ON;
 
@@ -824,16 +863,16 @@ GameStatus Board::gameStatus() {
 						return GameStatus::ON;
 					}
 				}
-			}
+			}*/
 		}
 	}
+
 	//figur¹ inn¹ ni¿ B/N mo¿na zmatowaæ
-	if(BN == 0 && piece > 0) return GameStatus::ON;
+	if (BN == 1 || piece == 0) {
+		return GameStatus::PAT;
+	}
 
-	if (isCheck())
-		return GameStatus::MAT;
-
-	return GameStatus::PAT;
+	return GameStatus::ON;
 }
 
 
