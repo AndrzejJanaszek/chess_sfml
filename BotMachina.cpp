@@ -117,6 +117,7 @@ Move BotMachina::depthSearch(std::string positionFEN, int depth) {
 				board.makeMove(myResponse);
 				//push_back FINAL EVALUATION
 				finalMovesEvaluations.push_back(evalPosition(board.getFEN()));
+				//std::cout << "Size: " << finalMovesEvaluations.size() << std::endl;
 				//undo moves (my response and enemy move)
 				board.undoMove();
 				board.undoMove();

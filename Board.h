@@ -74,6 +74,9 @@ public:
 	std::string getFEN();
 
 	bool isCheck();
+	//checkKingColor - color of king that will be checked/attacked
+	bool isCheck(ColorType checkKingColor);
+
 	GameStatus gameStatus();
 
 	std::string getNotation(int row, int col);

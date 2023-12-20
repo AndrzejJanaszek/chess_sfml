@@ -75,6 +75,8 @@ void Game::initWindow()
 	this->window->setFramerateLimit(60);
 }
 
+//Game::Game() : board("8/8/3k4/8/8/3K4/8/8 w - - 0 1")
+//Game::Game() : board("bb2k3/3np1p1/2p2pn1/1p6/7P/2N1PNP1/1PPP1P2/2B1KB2 w - - 0 1")
 Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 {
 	initVariables();
@@ -131,7 +133,6 @@ void Game::pollEvents() {
 							//board.swapActivePlayer();
 
 							this->checkGameStatus();
-
 						}
 					}
 

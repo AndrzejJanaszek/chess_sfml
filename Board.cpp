@@ -346,12 +346,15 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		std::vector<sf::Vector2i> movesTemp;
 		movesTemp.push_back(sf::Vector2i(row + 1, col));
 		movesTemp.push_back(sf::Vector2i(row - 1, col));
+
 		movesTemp.push_back(sf::Vector2i(row, col + 1));
 		movesTemp.push_back(sf::Vector2i(row, col - 1));
+
 		movesTemp.push_back(sf::Vector2i(row + 1, col - 1));
 		movesTemp.push_back(sf::Vector2i(row + 1, col + 1));
+
 		movesTemp.push_back(sf::Vector2i(row - 1, col - 1));
-		movesTemp.push_back(sf::Vector2i(row + 1, col - 1));
+		movesTemp.push_back(sf::Vector2i(row - 1, col + 1));
 
 		for (auto move : movesTemp) {
 			if (!isMoveOnBoard(move.x, move.y)) continue;
@@ -433,9 +436,9 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	//won't be check after it
 	std::vector<Move> possibleMovesFINAL;
 	for (auto posMove : possibleMoves) {
-		Board afterBoard = Board(this->getFEN());
+		Board afterBoard(this->getFEN());
 		afterBoard.makeMove(posMove);
-		if (!afterBoard.isCheck()) {
+		if (!afterBoard.isCheck(this->activePlayer)) {
 			possibleMovesFINAL.push_back(posMove);
 		}
 	}
@@ -474,8 +477,6 @@ void Board::makeMove(sf::Vector2i from, sf::Vector2i dest) {
 
 	this->fenHistory.push_back(this->fen);
 	this->fen = this->getFEN();
-
-	this->swapActivePlayer();
 }
 
 void Board::makeMove(Move move) {
@@ -532,6 +533,7 @@ void Board::makeMove(Move move) {
 		clearEnPassant();
 	}
 	makeMove(move.from, move.destination);
+	this->swapActivePlayer();
 }
 
 //get ALL squares under attack
@@ -711,7 +713,7 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 		viewedSquares.push_back(sf::Vector2i(row + 1, col - 1));
 		viewedSquares.push_back(sf::Vector2i(row + 1, col + 1));
 		viewedSquares.push_back(sf::Vector2i(row - 1, col - 1));
-		viewedSquares.push_back(sf::Vector2i(row + 1, col - 1));
+		viewedSquares.push_back(sf::Vector2i(row - 1, col + 1));
 	}
 
 	return viewedSquares;
@@ -775,6 +777,20 @@ bool Board::isCheck() {
 	for (auto squareUnderAttack : this->getSquaresUnderAttack(attackerColor)) {
 		if(isFreeSquare(squareUnderAttack.x, squareUnderAttack.y))continue;
 		
+		if (this->at(squareUnderAttack.x, squareUnderAttack.y)->type == kingType) {
+			return true;
+		}
+	}
+
+	return false;
+}
+//checkKingColor - color of king that will be checked/attacked
+bool Board::isCheck(ColorType checkKingColor) {
+	std::string kingType = checkKingColor == ColorType::LIGHT ? "K" : "k";
+	ColorType attackerColor = checkKingColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
+	for (auto squareUnderAttack : this->getSquaresUnderAttack(attackerColor)) {
+		if (isFreeSquare(squareUnderAttack.x, squareUnderAttack.y))continue;
+
 		if (this->at(squareUnderAttack.x, squareUnderAttack.y)->type == kingType) {
 			return true;
 		}
