@@ -13,6 +13,7 @@ private:
 	Board board;
 
 	bool AI_ON;
+	GameStatus endStatus;
 
 	////game logic
 	//ColorType activePlayer;

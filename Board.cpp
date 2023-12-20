@@ -802,25 +802,38 @@ bool Board::isCheck(ColorType checkKingColor) {
 GameStatus Board::gameStatus() {
 	//1. isCheck
 	//2. is there any possible move
-	this->print();
-	std::cout << activePlayer << "\n";
-
+	
+	int piece = 0;
+	int BN = 0;
 	//for each friendly piece
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
 			//check is there possible move
-			if (isFriendlyPiece(row, col, activePlayer)) {
-				if (getPossibleMoves(row, col, activePlayer).size() > 0 ) {
+			if (this->isFreeSquare(row, col))continue;
+
+			if (this->at(row, col)->getCapitalType() != "K") {
+				piece++;
+				if(piece > 1)
 					return GameStatus::ON;
+
+				if (this->at(row, col)->getCapitalType() == "B" || this->at(row, col)->getCapitalType() == "N") {
+					BN++;
+				}
+				else if (isFriendlyPiece(row, col, activePlayer)) {
+					if (getPossibleMoves(row, col, activePlayer).size() > 0) {
+						return GameStatus::ON;
+					}
 				}
 			}
 		}
 	}
+	//figur¹ inn¹ ni¿ B/N mo¿na zmatowaæ
+	if(BN == 0 && piece > 0) return GameStatus::ON;
 
 	if (isCheck())
 		return GameStatus::MAT;
-	else
-		return GameStatus::PAT;
+
+	return GameStatus::PAT;
 }
 
 

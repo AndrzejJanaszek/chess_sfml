@@ -4,6 +4,7 @@
 
 void Game::initVariables()
 {
+	this->endStatus = GameStatus::ON;
 	this->AI_ON = false;
 	this->window = nullptr;
 	//this->board = Board(&activePlayer);
@@ -77,8 +78,9 @@ void Game::initWindow()
 }
 
 //Game::Game() : board("8/8/3k4/8/8/3K4/8/8 w - - 0 1")
+Game::Game() : board("8/p7/3k4/8/8/3K4/8/8 w - - 0 1")
 //Game::Game() : board("bb2k3/3np1p1/2p2pn1/1p6/7P/2N1PNP1/1PPP1P2/2B1KB2 w - - 0 1")
-Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+//Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 {
 	initVariables();
 	initWindow();
@@ -232,6 +234,22 @@ void Game::render()
 	//	, fontUbuntuMono, 30);
 	//this->window->draw(text);
 	
+	if (this->endStatus == GameStatus::MAT) {
+		sf::RectangleShape endShape(sf::Vector2f(800, 800));
+		sf::Color winnerColor = this->board.getActivePlayer() == ColorType::LIGHT ? sf::Color(20, 20, 20) : sf::Color(240, 240, 240);
+		endShape.setFillColor(winnerColor);
+		endShape.setPosition(0, 0);
+
+		this->window->draw(endShape);
+	}
+	else if (this->endStatus == GameStatus::PAT) {
+		sf::RectangleShape endShape(sf::Vector2f(800, 800));
+		endShape.setFillColor(sf::Color(120, 120, 120));
+		endShape.setPosition(0, 0);
+
+		this->window->draw(endShape);
+	}
+		
 //display
 	this->window->display();
 }
@@ -246,13 +264,18 @@ void Game::checkGameStatus() {
 
 	if (gs == GameStatus::ON) {
 		//nothin
+		//this->endStatus = GameStatus::ON;
 	}
 	else if (gs == GameStatus::MAT) {
 		std::string winner = this->board.getActivePlayer() == ColorType::LIGHT ? "Czarny" : "Bia³y";
 		std::cout << "KONIEC GRY\nMAT\nWygra³: " << winner << " kolor" << std::endl;
+		
+		this->endStatus = GameStatus::MAT;
 	}
 	else if (gs == GameStatus::PAT) {
 		std::string winner = this->board.getActivePlayer() == ColorType::LIGHT ? "Czarny" : "Bia³y";
 		std::cout << "KONIEC GRY\nPAT\n";
+
+		this->endStatus = GameStatus::PAT;
 	}
 }
