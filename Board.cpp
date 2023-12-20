@@ -550,7 +550,6 @@ void Board::makeMove(Move move) {
 	if (move.moveType != MoveType::PAWN_LONG) {
 		clearEnPassant();
 	}
-	this->print();
 	makeMove(move.from, move.destination);
 	//this->print();
 	this->swapActivePlayer();

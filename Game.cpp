@@ -78,9 +78,9 @@ void Game::initWindow()
 }
 
 //Game::Game() : board("8/8/3k4/8/8/3K4/8/8 w - - 0 1")
-Game::Game() : board("8/p7/3k4/8/8/3K4/8/8 w - - 0 1")
+//Game::Game() : board("8/p7/3k4/8/8/3K4/8/8 w - - 0 1")
 //Game::Game() : board("bb2k3/3np1p1/2p2pn1/1p6/7P/2N1PNP1/1PPP1P2/2B1KB2 w - - 0 1")
-//Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 {
 	initVariables();
 	initWindow();
@@ -268,13 +268,13 @@ void Game::checkGameStatus() {
 	}
 	else if (gs == GameStatus::MAT) {
 		std::string winner = this->board.getActivePlayer() == ColorType::LIGHT ? "Czarny" : "Bia³y";
-		std::cout << "KONIEC GRY\nMAT\nWygra³: " << winner << " kolor" << std::endl;
+		//std::cout << "KONIEC GRY\nMAT\nWygra³: " << winner << " kolor" << std::endl;
 		
 		this->endStatus = GameStatus::MAT;
 	}
 	else if (gs == GameStatus::PAT) {
 		std::string winner = this->board.getActivePlayer() == ColorType::LIGHT ? "Czarny" : "Bia³y";
-		std::cout << "KONIEC GRY\nPAT\n";
+		//std::cout << "KONIEC GRY\nPAT\n";
 
 		this->endStatus = GameStatus::PAT;
 	}

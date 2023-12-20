@@ -6,18 +6,15 @@
 
 
 BotMachina::BotMachina() {
-	std::cout << "Def const\n";
 }
 
 BotMachina::BotMachina(ColorType color)
 {
 	this->color = color;
-	std::cout << "ColorType color const\n";
 }
 
 BotMachina::~BotMachina()
 {
-	std::cout << "~BotMachina\n";
 }
 
 //todo: getMove(unsigned int depth,...)
