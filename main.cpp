@@ -9,11 +9,7 @@ int main() {
 	srand(time(NULL));
 
 	Game game;
-	/*sf::Font fontUbuntu;
-	if (!fontUbuntu.loadFromFile("./fonts/Ubuntu/Ubuntu-Regular.ttf")) {
-		std::cout << "Error: Load from file Ubuntu-Regular\n";
-	}*/
-
+	
 	while (game.isRunning()) {
 		//Update
 		game.update();

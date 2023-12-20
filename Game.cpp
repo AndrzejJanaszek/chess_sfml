@@ -4,6 +4,7 @@
 
 void Game::initVariables()
 {
+	this->AI_ON = false;
 	this->window = nullptr;
 	//this->board = Board(&activePlayer);
 
@@ -122,17 +123,18 @@ void Game::pollEvents() {
 							//board.swapActivePlayer();
 
 							this->checkGameStatus();
+							if (this->AI_ON) {
+								//BOT MACHINA MOVE
+								BotMachina botMachina(board.getActivePlayer());
+								//Move botMove = botMachina.getMove(this->board.getFEN());
+								Move botMove = botMachina.depthSearch(this->board.getFEN(), 1);
+								if (!botMove.isEmpty()) {
+									this->board.makeMove(botMove);
+								}
+								//board.swapActivePlayer();
 
-							//BOT MACHINA MOVE
-							BotMachina botMachina(board.getActivePlayer());
-							//Move botMove = botMachina.getMove(this->board.getFEN());
-							Move botMove = botMachina.depthSearch(this->board.getFEN(), 1);
-							if (!botMove.isEmpty()) {
-								this->board.makeMove(botMove);
+								this->checkGameStatus();
 							}
-							//board.swapActivePlayer();
-
-							this->checkGameStatus();
 						}
 					}
 
@@ -142,6 +144,10 @@ void Game::pollEvents() {
 					}
 				}
 			}
+
+		}
+		if ( sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ) {
+			this->AI_ON = !this->AI_ON;
 		}
 	}
 }

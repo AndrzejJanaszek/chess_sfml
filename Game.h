@@ -12,6 +12,8 @@ private:
 	sf::Event ev;
 	Board board;
 
+	bool AI_ON;
+
 	////game logic
 	//ColorType activePlayer;
 	//// v(-1,-1) == null
