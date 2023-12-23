@@ -74,7 +74,7 @@ void Game::initVariables()
 void Game::initWindow()
 {
 	this->window = new sf::RenderWindow(sf::VideoMode(800, 800), "Title");
-	this->window->setFramerateLimit(60);
+	//this->window->setFramerateLimit(60);
 }
 
 //Game::Game() : board("8/8/3k4/8/8/3K4/8/8 w - - 0 1")
@@ -129,7 +129,8 @@ void Game::pollEvents() {
 								//BOT MACHINA MOVE
 								BotMachina botMachina(board.getActivePlayer());
 								//Move botMove = botMachina.getMove(this->board.getFEN());
-								Move botMove = botMachina.depthSearch(this->board.getFEN(), 1);
+								Board boardForBot(this->board.getFEN());
+								Move botMove = botMachina.depthSearch(boardForBot, 2);
 								if (!botMove.isEmpty()) {
 									this->board.makeMove(botMove);
 								}

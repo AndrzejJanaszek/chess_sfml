@@ -18,9 +18,8 @@ BotMachina::~BotMachina()
 }
 
 //todo: getMove(unsigned int depth,...)
-Move BotMachina::getMove(std::string positionFEN) {
+Move BotMachina::getMove(Board &board) {
 	//expected(positionFEN) [position] [botColor] ...
-	Board board(positionFEN);
 	std::vector<Move> allPossibleMoves = board.getAllPossibleMoves();
 
 	//if no moves possible
@@ -36,7 +35,7 @@ Move BotMachina::getMove(std::string positionFEN) {
 	for (Move move : allPossibleMoves) {
 		board.makeMove(move);
 		int colorMultiplier = color == ColorType::LIGHT ? 1 : -1;
-		double evalValue = this->evalPosition( board.getFEN() ) * colorMultiplier;
+		double evalValue = this->evalPosition(board) * colorMultiplier;
 
 		//set first max
 		if (first) {
@@ -50,17 +49,16 @@ Move BotMachina::getMove(std::string positionFEN) {
 			bestMove = move;
 		}
 		
-		board.undoMove(); // TODO // na razie reset przez inicjalizacje
+		board.undoMove();
 	}
 
 	return bestMove;
 }
 
-double BotMachina::evalPosition(std::string positionFEN) {
+double BotMachina::evalPosition(Board &board) {
 	// >0	white +
 	// ==0	equal 0
 	// <0	black -
-	Board board(positionFEN);
 	std::map<std::string, double> pieceValue;
 	pieceValue["P"] = 1;
 	pieceValue["B"] = 3;
@@ -90,14 +88,13 @@ double BotMachina::evalPosition(std::string positionFEN) {
 	return evalPoints;
 }
 
-Move BotMachina::depthSearch(std::string positionFEN, int depth) {
+Move BotMachina::depthSearch(Board& board, int depth) {
 	if (depth == 1) {
 		//trywialny
-		return getMove(positionFEN);
+		return getMove(board);
 	}
 	else {
 		ColorType enemyColor = this->color == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
-		Board board(positionFEN); 
 		std::vector<Move> possibleMoves = board.getAllPossibleMoves();
 		std::vector<double> finalMovesEvaluations;
 
@@ -110,10 +107,10 @@ Move BotMachina::depthSearch(std::string positionFEN, int depth) {
 				board.makeMove(enemyMove);
 				//odpowiedŸ na ruch przeciwnika
 				//my* best reaction/response on enemy /\ move
-				Move myResponse = this->depthSearch(board.getFEN(), depth - 1);
+				Move myResponse = this->depthSearch(board, depth - 1);
 				board.makeMove(myResponse);
 				//push_back FINAL EVALUATION
-				finalMovesEvaluations.push_back(evalPosition(board.getFEN()));
+				finalMovesEvaluations.push_back(evalPosition(board));
 				//std::cout << "Size: " << finalMovesEvaluations.size() << std::endl;
 				//undo moves (my response and enemy move)
 				board.undoMove();
