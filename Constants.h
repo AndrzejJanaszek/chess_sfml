@@ -4,21 +4,21 @@
 
 struct PieceName
 {
-	static const std::string BLACK_KING;
-	static const std::string BLACK_QUEEN;
-	static const std::string BLACK_ROOK;
-	static const std::string BLACK_KNIGHT;
-	static const std::string BLACK_BISHOP;
-	static const std::string BLACK_PAWN;
+	static const char BLACK_KING;
+	static const char BLACK_QUEEN;
+	static const char BLACK_ROOK;
+	static const char BLACK_KNIGHT;
+	static const char BLACK_BISHOP;
+	static const char BLACK_PAWN;
 
-	static const std::string WHITE_KING;
-	static const std::string WHITE_QUEEN;
-	static const std::string WHITE_ROOK;
-	static const std::string WHITE_KNIGHT;
-	static const std::string WHITE_BISHOP;
-	static const std::string WHITE_PAWN;
+	static const char WHITE_KING;
+	static const char WHITE_QUEEN;
+	static const char WHITE_ROOK;
+	static const char WHITE_KNIGHT;
+	static const char WHITE_BISHOP;
+	static const char WHITE_PAWN;
 
-	static const std::string EMPTY;
+	static const char EMPTY;
 };
 
 
@@ -28,6 +28,17 @@ struct TextureName : PieceName
 	static const std::string LIGHT_SQUARE;
 	static const std::string SQUARE_SHADOW;
 };
+struct MovesPatterns
+{
+	/*static std::vector<sf::Vector2i> WHITE_PAWN;
+	static std::vector<sf::Vector2i> BLACK_PAWN;*/
+	static std::vector<sf::Vector2i> BISHOP;
+	static std::vector<sf::Vector2i> KNIGHT;
+	static std::vector<sf::Vector2i> ROOK;
+	static std::vector<sf::Vector2i> QUEEN;
+	static std::vector<sf::Vector2i> KING;
+};
+
 
 enum ColorType
 {
@@ -73,7 +84,7 @@ public:
 	virtual ~VALUE_MAP();
 
 	//type (piece type) => CAPS : "P" "B" "N" "R" "K" "Q"
-	static double getValueAtPositioin(int row, int col, std::string type, ColorType color);
+	static double getValueAtPositioin(int row, int col, char type, ColorType color);
 };
 
 /*

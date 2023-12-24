@@ -1,22 +1,75 @@
 #include "Constants.h"
+#include <string>
+#include "SFML/Graphics.hpp"
 
-const std::string PieceName::BLACK_KING = "k";
-const std::string PieceName::BLACK_QUEEN = "q";
-const std::string PieceName::BLACK_ROOK = "r";
-const std::string PieceName::BLACK_KNIGHT = "n";
-const std::string PieceName::BLACK_BISHOP = "b";
-const std::string PieceName::BLACK_PAWN = "p";
-const std::string PieceName::WHITE_KING = "K";
-const std::string PieceName::WHITE_QUEEN = "Q";
-const std::string PieceName::WHITE_ROOK = "R";
-const std::string PieceName::WHITE_KNIGHT = "N";
-const std::string PieceName::WHITE_BISHOP = "B";
-const std::string PieceName::WHITE_PAWN = "P";
-const std::string PieceName::EMPTY = "-";
+const char PieceName::BLACK_KING	= 'k';
+const char PieceName::BLACK_QUEEN	= 'q';
+const char PieceName::BLACK_ROOK	= 'r';
+const char PieceName::BLACK_KNIGHT	= 'n';
+const char PieceName::BLACK_BISHOP	= 'b';
+const char PieceName::BLACK_PAWN	= 'p';
+const char PieceName::WHITE_KING	= 'K';
+const char PieceName::WHITE_QUEEN	= 'Q';
+const char PieceName::WHITE_ROOK	= 'R';
+const char PieceName::WHITE_KNIGHT	= 'N';
+const char PieceName::WHITE_BISHOP	= 'B';
+const char PieceName::WHITE_PAWN	= 'P';
+const char PieceName::EMPTY			= '-';
 
 const std::string TextureName::DARK_SQUARE = "dark_square";
 const std::string TextureName::LIGHT_SQUARE = "light_square";
 const std::string TextureName::SQUARE_SHADOW = "square_shadow";
+
+std::vector<sf::Vector2i> MovesPatterns::BISHOP = {
+	sf::Vector2i(1, 1),
+	sf::Vector2i(1, -1),
+	sf::Vector2i(-1, 1),
+	sf::Vector2i(-1, -1)
+};
+
+std::vector<sf::Vector2i> MovesPatterns::KNIGHT = {
+	sf::Vector2i(2, -1),
+	sf::Vector2i(2, 1),
+	sf::Vector2i(1, 2),
+	sf::Vector2i(1, -2),
+	sf::Vector2i(-1, 2),
+	sf::Vector2i(-1, -2),
+	sf::Vector2i(-2, 1),
+	sf::Vector2i(-2, -1)
+};
+
+std::vector<sf::Vector2i> MovesPatterns::ROOK = {
+	sf::Vector2i(1, 0),
+	sf::Vector2i(-1, 0),
+	sf::Vector2i(0, 1),
+	sf::Vector2i(0, -1)
+};
+
+std::vector<sf::Vector2i> MovesPatterns::QUEEN = {
+	sf::Vector2i(1, 0),
+	sf::Vector2i(-1, 0),
+	sf::Vector2i(0, 1),
+	sf::Vector2i(0, -1),
+	sf::Vector2i(1, 1),
+	sf::Vector2i(1, -1),
+	sf::Vector2i(-1, 1),
+	sf::Vector2i(-1, -1)
+};
+
+
+
+std::vector<sf::Vector2i> MovesPatterns::KING = { MovesPatterns::QUEEN };
+//std::vector<sf::Vector2i> KING = {
+//	sf::Vector2i(1, 0),
+//	sf::Vector2i(-1, 0),
+//	sf::Vector2i(0, 1),
+//	sf::Vector2i(0, -1),
+//	sf::Vector2i(1, 1),
+//	sf::Vector2i(1, -1),
+//	sf::Vector2i(-1, 1),
+//	sf::Vector2i(-1, -1)
+//};
+
 
 Move::Move() {
 
@@ -44,7 +97,7 @@ VALUE_MAP::VALUE_MAP() {}
 VALUE_MAP::~VALUE_MAP() {}
 
 //type (piece type) => CAPS : "P" "B" "N" "R" "Q" "K"
-double VALUE_MAP::getValueAtPositioin(int row, int col, std::string type, ColorType color) {
+double VALUE_MAP::getValueAtPositioin(int row, int col, char type, ColorType color) {
 	if (color == ColorType::DARK) row = 7 - row;
 
 	int index = 8 * row + col;
@@ -54,22 +107,22 @@ double VALUE_MAP::getValueAtPositioin(int row, int col, std::string type, ColorT
 	double valuesROOK[] = { 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.4, 0.4, 0.35, 0.35, 0.4, 0.4, 0.6, 0.6, 0.45, 0.35, 0.3, 0.3, 0.35, 0.45, 0.6, 0.6, 0.5, 0.4, 0.3, 0.3, 0.4, 0, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.6, 0.9, 1, 1, 1, 1, 0.9, 0.6 };
 	double valuesKING[] = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.4, 0.5, 0.5, 0.45, 0.2, 0.1, 0.2, 0.4, 0.7, 0.7, 0.7, 0.7, 0.5, 0.2, 0.2, 0, 0.7, 0.7, 0.7, 0.7, 0, 0.2, 0.45, 0.45, 0, 0.6, 0.6, 0, 0.45, 0, 0.7, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.7, 0.7, 0.7, 0.65, 0.4, 0.4, 0.45, 0.7, 0.7, 1, 1, 1, 0.7, 0, 0.7, 1, 1 };
 
-	if (type == "P") {
+	if (type == PieceName::WHITE_PAWN) {
 		return valuesPAWN[index];
 	}
-	else if (type == "B") {
+	else if (type == PieceName::WHITE_BISHOP) {
 		return valuesBISHOP[index];
 	}
-	else if (type == "N") {
+	else if (type == PieceName::WHITE_KNIGHT) {
 		return valuesKNIGHT[index];
 	}
-	else if (type == "R") {
+	else if (type == PieceName::WHITE_ROOK) {
 		return valuesROOK[index];
 	}
-	else if (type == "Q") {
+	else if (type == PieceName::WHITE_QUEEN) {
 		return (valuesROOK[index] + valuesBISHOP[index]) / 2.0;
 	}
-	else if (type == "K") {
+	else if (type == PieceName::WHITE_KING) {
 		return valuesKING[index];
 	}
 

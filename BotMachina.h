@@ -1,6 +1,7 @@
 #pragma once
 #include "Constants.h"
 #include "Board.h"
+#include <iostream>
 
 class BotMachina
 {

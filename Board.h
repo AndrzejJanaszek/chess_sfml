@@ -1,7 +1,8 @@
 #pragma once
-#include "Piece.h"
-#include "Board.h"
 #include <iostream>
+#include <string>
+#include <SFML/Graphics.hpp>
+#include "Constants.h"
 
 class Board
 {
@@ -19,8 +20,7 @@ private:
 	// 0,0 1,0 2,0 ...
 	// [0] [1] [2] [3] [4] [5] [6] ... [n] 
 	
-	Piece** board;
-	std::string fen;
+	char* board;
 	std::vector<std::string> fenHistory;
 	void initVariables();
 	bool isMoveOnBoard(int row, int col);
@@ -40,9 +40,15 @@ public:
 	virtual ~Board();
 
 	//functions
-	void initBoard();
-	Piece* at(int row, int col);
 	void print();
+
+	void initBoard();
+	char at(int row, int col);
+	void setAt(int row, int col, char type);
+	ColorType getPieceColorAt(int row, int col);
+	ColorType getPieceColor(char type);
+	char getPieceCapsTypeAt(int row, int col);
+	char getPieceCapsType(char type);
 
 	void setActivePlayer(ColorType activePlayer);
 	ColorType getActivePlayer();
@@ -64,6 +70,7 @@ public:
 
 	void makeMove(sf::Vector2i from, sf::Vector2i dest);
 	void makeMove(Move move);
+	void undoMove();
 
 	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor, bool ignoreKing);
 	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor, bool ignoreKing);
@@ -75,13 +82,12 @@ public:
 
 	bool isCheck();
 	//checkKingColor - color of king that will be checked/attacked
-	bool isCheck(ColorType checkKingColor);
+	/*bool isCheck(ColorType checkKingColor);*/
 
 	GameStatus gameStatus();
 
 	std::string getNotation(int row, int col);
 	sf::Vector2i getCords(std::string notation);
 
-	void undoMove();
 };
 

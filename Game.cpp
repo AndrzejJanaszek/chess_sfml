@@ -16,7 +16,7 @@ void Game::initVariables()
 
 	//Textures
 	const size_t _pieces_names_len_ = 12;
-	std::string* piecesNames = new std::string[_pieces_names_len_]{
+	char* piecesNames = new char[_pieces_names_len_]{
 		PieceName::BLACK_KING,
 		PieceName::BLACK_QUEEN,
 		PieceName::BLACK_ROOK,
@@ -45,7 +45,7 @@ void Game::initVariables()
 				std::cout << "Error: Failed to load white " + piecesNames[i] + s2;
 			}
 		}
-		this->textures[piecesNames[i]] = piece_texture;
+		this->textures[std::string(1, piecesNames[i])] = piece_texture;
 	}
 	delete[] piecesNames;
 
@@ -207,7 +207,7 @@ void Game::render()
 			}
 
 			//draw pieces
-			if (this->board.at(row, col) != nullptr){
+			if (this->board.at(row, col) != PieceName::EMPTY){
 				/*std::string pieceStr = this->board.at(row, col)->type;*/
 				
 				/*sf::Sprite pieceSprite;
@@ -224,7 +224,7 @@ void Game::render()
 
 				sf::Sprite pieceSprite;
 				pieceSprite.setPosition(col * 100, row * 100);
-				pieceSprite.setTexture(this->textures[this->board.at(row, col)->type]);
+				pieceSprite.setTexture(this->textures[std::string(1, this->board.at(row, col))]);
 				pieceSprite.setScale(100 / 256.0f, 100 / 256.0f);
 				this->window->draw(pieceSprite);
 			}

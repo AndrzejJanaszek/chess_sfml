@@ -1,24 +1,15 @@
 #include "Board.h"
 #include <string>
 #include <iostream>
-
-//Board::Board(ColorType* refActivePlayer)
-//{
-//	initVariables();
-//	setActivePlayer(refActivePlayer);
-//
-//	this->initBoard();
-//	this->print();
-//}
+#include "Constants.h"
 
 Board::Board(std::string fen)
 {
-	this->fen = fen;
+	//this->fen = fen;
+	this->fenHistory.push_back(fen);
 	this->initVariables();
-	//setActivePlayer(refActivePlayer);
 
 	this->initBoard();
-	//this->print();
 }
 
 Board::~Board()
@@ -27,8 +18,7 @@ Board::~Board()
 }
 
 void Board::initVariables() {
-	//this->board = nullptr;
-	this->board = new Piece*[8*8];
+	this->board = new char[8*8];
 	this->enPassant = sf::Vector2i(-1, -1);
 
 	this->isDarkKingCastlePossible = false;
@@ -39,7 +29,6 @@ void Board::initVariables() {
 
 void Board::initBoard() {
 	//if empty: -
-	//const char empty = '-';
 	//std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	//std::string fen = "1r2kbnr/pp1ppppp/2p2q2/1NP5/B2b4/1n3NQ1/PP1P1PPP/R3KB1R w KQk - 0 1";
 	//std::string fen = "3q4/8/6P1/PK1N1k2/PP1p4/p5np/4pP1p/5r2 w - - 0 1";<
@@ -48,13 +37,14 @@ void Board::initBoard() {
 
 	//split fen by ' ' into 6 strings
 	std::string chunkStr = "";
-	for (int i = 0; i < this->fen.length(); i++) {
-		if (this->fen[i] == ' ' || i == this->fen.length()-1) {
+	std::string fen = this->fenHistory.back();
+	for (int i = 0; i < fen.length(); i++) {
+		if (fen[i] == ' ' || i == fen.length()-1) {
 			fenSplited.push_back(chunkStr);
 			chunkStr = "";
 		}
 		else {
-			chunkStr += this->fen[i];
+			chunkStr += fen[i];
 		}
 	}
 
@@ -72,14 +62,14 @@ void Board::initBoard() {
 		//fill empty
 		if (48 <= fenPosition[i] && fenPosition[i] <= 57) {
 			for (int ii = 0; ii < fenPosition[i] - 48; ii++) {
-				board[j] = nullptr;
+				board[j] = PieceName::EMPTY;
 				j++;
 			}
 			continue;
 		}
 
 		//piece
-		board[j] = new Piece( std::string(1, fenPosition[i]) );
+		board[j] = fenPosition[i];
 		int row = j / 8;
 		int col = j % 8;
 		//board[j]->sprite.setPosition(100 * col, 100 * row);
@@ -118,15 +108,40 @@ void Board::initBoard() {
 	//FEN COUTN TODO STRING NR 6
 }
 
-Piece* Board::at(int row, int col) {
+char Board::at(int row, int col) {
 	return board[row * 8 + col];
+}
+
+void Board::setAt(int row, int col, char type){
+	board[row * 8 + col] = type;
+}
+
+ColorType Board::getPieceColorAt(int row, int col) {
+	return this->getPieceColor(this->at(row, col));
+}
+
+ColorType Board::getPieceColor(char type) {
+	if (65 <= type && type <= 90)
+		return ColorType::LIGHT;
+	return ColorType::DARK;
+}
+
+char Board::getPieceCapsTypeAt(int row, int col) {
+	return this->getPieceCapsType(this->at(row, col));
+}
+char Board::getPieceCapsType(char type) {
+	if (65 <= type && type <= 90) {
+		//white
+		return type;
+	}
+	return type - 32;
 }
 
 void Board::print() {
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			if (this->board[i * 8 + j] != nullptr) {
-				std::cout << this->board[i*8 + j]->type;
+			if (this->board[i * 8 + j] != PieceName::EMPTY) {
+				std::cout << this->board[i*8 + j];
 			}
 			else {
 				std::cout << ".";
@@ -152,7 +167,7 @@ void Board::swapActivePlayer() {
 bool Board::isFriendlyPiece(int row, int col, ColorType activeColor) {
 	if (this->isFreeSquare(row,col)) return false;
 
-	if (this->at(row, col)->getColor() == activeColor)
+	if (this->getPieceColorAt(row, col) == activeColor)
 		return true;
 	return false;
 }
@@ -160,13 +175,13 @@ bool Board::isFriendlyPiece(int row, int col, ColorType activeColor) {
 bool Board::isEnemyPiece(int row, int col, ColorType activeColor) {
 	if (this->isFreeSquare(row, col)) return false;
 
-	if (this->at(row, col)->getColor() != activeColor)
+	if (this->getPieceColorAt(row, col) != activeColor)
 		return true;
 	return false;
 }
 
 bool Board::isFreeSquare(int row, int col) {
-	if (this->at(row, col) == nullptr) return true;
+	if (this->at(row, col) == PieceName::EMPTY) return true;
 
 	return false;
 }
@@ -177,20 +192,18 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	if (isFreeSquare(row,col)) return possibleMoves;
 
 	sf::Vector2i from(row, col);
-	std::string pieceType = this->at(row, col)->type;
-	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
+	char pieceType = this->getPieceCapsTypeAt(row, col);
 	//pawn
-	if (pieceType == "P") {
+	if (pieceType == PieceName::WHITE_PAWN) {
 		int firstPawnRow = this->activePlayer == ColorType::LIGHT ? 6 : 1;
-		int promotionRow = this->activePlayer == ColorType::LIGHT ? 1 : 6;
+		int promotionRow = 7-firstPawnRow;
 		//for pawn
 		int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
-		sf::Vector2i attack1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1);
-		sf::Vector2i attack2 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col + 1);
-		sf::Vector2i move1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col);
-		sf::Vector2i move2= sf::Vector2i(row + 2 * colorDirectionMultiplier, col);
+		sf::Vector2i attack1	= sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1);
+		sf::Vector2i attack2	= sf::Vector2i(row + 1 * colorDirectionMultiplier, col + 1);
+		sf::Vector2i move1		= sf::Vector2i(row + 1 * colorDirectionMultiplier, col);
+		sf::Vector2i move2		= sf::Vector2i(row + 2 * colorDirectionMultiplier, col);
 
-		
 
 		//attacks
 		//if onBoard AND isEnemy
@@ -232,18 +245,11 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		}
 	}
 
-	if (pieceType == "N") {
-		std::vector<sf::Vector2i> movesTemp;
-		movesTemp.push_back(sf::Vector2i(row + 2, col + 1));
-		movesTemp.push_back(sf::Vector2i(row + 2, col - 1));
-		movesTemp.push_back(sf::Vector2i(row + 1, col + 2));
-		movesTemp.push_back(sf::Vector2i(row + 1, col - 2));
-		movesTemp.push_back(sf::Vector2i(row - 1, col + 2));
-		movesTemp.push_back(sf::Vector2i(row - 1, col - 2));
-		movesTemp.push_back(sf::Vector2i(row - 2, col + 1));
-		movesTemp.push_back(sf::Vector2i(row - 2, col - 1));
+	if (pieceType == PieceName::WHITE_KNIGHT) {
 
-		for (auto moveT : movesTemp) {
+		for (auto moveT : MovesPatterns::KNIGHT) {
+			moveT.x += row;
+			moveT.y += col;
 			//if not on board continue
 			if (!isMoveOnBoard(moveT.x, moveT.y)) continue;
 
@@ -255,17 +261,11 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		}
 	}
 
-	if (pieceType == "R") {
-		std::vector<sf::Vector2i> moveDirections;
-		moveDirections.push_back(sf::Vector2i(1, 0));
-		moveDirections.push_back(sf::Vector2i(-1, 0));
-		moveDirections.push_back(sf::Vector2i(0, 1));
-		moveDirections.push_back(sf::Vector2i(0, -1));
+	if (pieceType == PieceName::WHITE_ROOK) {
 
 		//for each direction
-		for (auto mDir : moveDirections) {
-			int multiplier = 1;
-			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+		for (auto &mDir : MovesPatterns::ROOK) {
+			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
@@ -279,24 +279,16 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 					break;
 				}
-
-				multiplier++;
-				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+				move.x += mDir.x;
+				move.y += mDir.y;
 			}
 		}
 	}
 
-	if (pieceType == "B") {
-		std::vector<sf::Vector2i> moveDirections;
-		moveDirections.push_back(sf::Vector2i(1, 1));
-		moveDirections.push_back(sf::Vector2i(1, -1));
-		moveDirections.push_back(sf::Vector2i(-1, 1));
-		moveDirections.push_back(sf::Vector2i(-1, -1));
-
+	if (pieceType == PieceName::WHITE_BISHOP) {
 		//for each direction
-		for (auto mDir : moveDirections) {
-			int multiplier = 1;
-			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+		for (auto &mDir : MovesPatterns::BISHOP) {
+			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
@@ -310,28 +302,16 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 					break;
 				}
-
-				multiplier++;
-				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+				move.x += mDir.x;
+				move.y += mDir.y;
 			}
 		}
 	}
 
-	if (pieceType == "Q") {
-		std::vector<sf::Vector2i> moveDirections;
-		moveDirections.push_back(sf::Vector2i(1, 0));
-		moveDirections.push_back(sf::Vector2i(-1, 0));
-		moveDirections.push_back(sf::Vector2i(0, 1));
-		moveDirections.push_back(sf::Vector2i(0, -1));
-		moveDirections.push_back(sf::Vector2i(1, 1));
-		moveDirections.push_back(sf::Vector2i(1, -1));
-		moveDirections.push_back(sf::Vector2i(-1, 1));
-		moveDirections.push_back(sf::Vector2i(-1, -1));
-
+	if (pieceType == PieceName::WHITE_QUEEN) {
 		//for each direction
-		for (auto mDir : moveDirections) {
-			int multiplier = 1;
-			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+		for (auto &mDir : MovesPatterns::QUEEN) {
+			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
@@ -345,34 +325,24 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 					break;
 				}
-
-				multiplier++;
-				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+				move.x += mDir.x;
+				move.y += mDir.y;
 			}
 		}
 	}
 
-	if (pieceType == "K") {
+	if (pieceType == PieceName::WHITE_KING) {
 		ColorType enemyColor = activeColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
 		std::vector<sf::Vector2i> squaresUnderAttack = getSquaresUnderAttack(enemyColor, true);
-		std::vector<sf::Vector2i> movesTemp;
-		movesTemp.push_back(sf::Vector2i(row + 1, col));
-		movesTemp.push_back(sf::Vector2i(row - 1, col));
 
-		movesTemp.push_back(sf::Vector2i(row, col + 1));
-		movesTemp.push_back(sf::Vector2i(row, col - 1));
-
-		movesTemp.push_back(sf::Vector2i(row + 1, col - 1));
-		movesTemp.push_back(sf::Vector2i(row + 1, col + 1));
-
-		movesTemp.push_back(sf::Vector2i(row - 1, col - 1));
-		movesTemp.push_back(sf::Vector2i(row - 1, col + 1));
-
-		for (auto move : movesTemp) {
+		for (auto move : MovesPatterns::KING) {
+			move.x += row;
+			move.y += col;
 			if (!isMoveOnBoard(move.x, move.y)) continue;
+
 			bool containsMove = false;
 			//is square under attack
-			for (auto squareUnderAttack : squaresUnderAttack) {
+			for (auto &squareUnderAttack : squaresUnderAttack) {
 				if (move.x == squareUnderAttack.x && move.y == squareUnderAttack.y) {
 					containsMove = true; 
 					break; 
@@ -447,12 +417,13 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	//for each possibleMove check is it legal
 	//won't be check after it
 	std::vector<Move> possibleMovesFINAL;
+	Board afterBoard(this->getFEN());
 	for (auto posMove : possibleMoves) {
-		Board afterBoard(this->getFEN());
 		afterBoard.makeMove(posMove);
-		if (!afterBoard.isCheck(this->activePlayer)) {
+		if (!afterBoard.isCheck()) {
 			possibleMovesFINAL.push_back(posMove);
 		}
+		afterBoard.undoMove();
 	}
 
 	return possibleMovesFINAL;
@@ -485,10 +456,9 @@ void Board::clearEnPassant() {
 
 void Board::makeMove(sf::Vector2i from, sf::Vector2i dest) {
 	board[dest.x * 8 + dest.y] = this->at(from.x, from.y);
-	board[from.x * 8 + from.y] = nullptr;
+	board[from.x * 8 + from.y] = PieceName::EMPTY;
 
-	this->fenHistory.push_back(this->fen);
-	this->fen = this->getFEN();
+	this->fenHistory.push_back(this->getFEN());
 }
 
 void Board::makeMove(Move move) {
@@ -500,7 +470,7 @@ void Board::makeMove(Move move) {
 	}
 	else if (MoveType::EN_PASSANT == move.moveType) {
 		//TODO
-		board[move.from.x * 8 + move.destination.y] = nullptr;
+		board[move.from.x * 8 + move.destination.y] = PieceName::EMPTY;
 	}
 	else if(MoveType::QUEEN_CASTLE == move.moveType) {
 		//TODO
@@ -516,31 +486,31 @@ void Board::makeMove(Move move) {
 	}
 	else if (MoveType::PROMOTION == move.moveType) {
 		//TODO
-		if (this->at(move.from.x, move.from.y)->getColor() == LIGHT) {
-			this->at(move.from.x, move.from.y)->type = "Q";
+		if (getPieceColorAt(move.from.x, move.from.y) == LIGHT) {
+			this->setAt(move.from.x, move.from.y, 'Q');
 		}
 		else {
-			this->at(move.from.x, move.from.y)->type = "q";
+			this->setAt(move.from.x, move.from.y, 'q');
 		}
 	}
 
 	//REMOVE CASTLING POSSIBILITY
 	//Piece* ppp = this->at(move.from.x, move.from.y);
-	if (this->at(move.from.x, move.from.y)->type == "K") {
+	if (this->at(move.from.x, move.from.y) == 'K') {
 		this->isLightKingCastlePossible = false;
 		this->isLightQueenCastlePossible = false;
 	}
-	else if ( this->at(move.from.x, move.from.y)->type == "k") {
+	else if (this->at(move.from.x, move.from.y) == 'k') {
 		this->isDarkKingCastlePossible = false;
 		this->isDarkQueenCastlePossible = false;
 	}
-	else if (this->at(move.from.x, move.from.y)->type == "R") {
+	else if (this->at(move.from.x, move.from.y) == 'R') {
 		if(move.from.y == 0)
 			this->isLightQueenCastlePossible = false;
 		else
 			this->isLightKingCastlePossible = false;
 	}
-	else if (this->at(move.from.x, move.from.y)->type == "r") {
+	else if (this->at(move.from.x, move.from.y) == 'r') {
 		if(move.from.y == 0)
 			this->isDarkQueenCastlePossible = false;
 		else
@@ -562,7 +532,7 @@ std::vector<sf::Vector2i> Board::getSquaresUnderAttack(ColorType attackerColor, 
 	// tableAt ( row*8 + col )
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
-			if (this->at(row, col) != nullptr && this->at(row,col)->getColor() == attackerColor) {
+			if (this->at(row, col) != PieceName::EMPTY && this->getPieceColorAt(row, col) == attackerColor) {
 				//for each square that piece (see/is under piece's attack)
 				for (auto viewedSquare : getPieceView(row, col, attackerColor, ignoreKing)) {
 					table[viewedSquare.x * 8 + viewedSquare.y] = true;
@@ -583,10 +553,9 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 	std::vector<sf::Vector2i> viewedSquares;
 	if (isFreeSquare(row,col)) return viewedSquares;
 
-	std::string pieceType = this->at(row, col)->type;
-	if (pieceType[0] >= 97) pieceType = pieceType[0] - 32;
+	char pieceType = getPieceCapsTypeAt(row, col);
 	//pawn
-	if (pieceType == "P") {
+	if (pieceType == PieceName::WHITE_PAWN) {
 		//for pawn
 		int colorDirectionMultiplier = activeColor == ColorType::LIGHT ? -1 : 1;
 		sf::Vector2i attack1 = sf::Vector2i(row + 1 * colorDirectionMultiplier, col - 1);
@@ -606,35 +575,18 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 		}
 	}
 
-	if (pieceType == "N") {
-		std::vector<sf::Vector2i> movesTemp;
-		movesTemp.push_back(sf::Vector2i(row + 2, col + 1));
-		movesTemp.push_back(sf::Vector2i(row + 2, col - 1));
-		movesTemp.push_back(sf::Vector2i(row + 1, col + 2));
-		movesTemp.push_back(sf::Vector2i(row + 1, col - 2));
-		movesTemp.push_back(sf::Vector2i(row - 1, col + 2));
-		movesTemp.push_back(sf::Vector2i(row - 1, col - 2));
-		movesTemp.push_back(sf::Vector2i(row - 2, col + 1));
-		movesTemp.push_back(sf::Vector2i(row - 2, col - 1));
-
-		for (auto moveT : movesTemp) {
+	if (pieceType == PieceName::WHITE_KNIGHT) {
+		for (auto &moveT : MovesPatterns::KNIGHT) {
 			//if not on board continue
 			if (!isMoveOnBoard(moveT.x, moveT.y)) continue;
 			viewedSquares.push_back(moveT);
 		}
 	}
 
-	if (pieceType == "R") {
-		std::vector<sf::Vector2i> moveDirections;
-		moveDirections.push_back(sf::Vector2i(1, 0));
-		moveDirections.push_back(sf::Vector2i(-1, 0));
-		moveDirections.push_back(sf::Vector2i(0, 1));
-		moveDirections.push_back(sf::Vector2i(0, -1));
-
+	if (pieceType == PieceName::WHITE_ROOK) {
 		//for each direction
-		for (auto mDir : moveDirections) {
-			int multiplier = 1;
-			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+		for (auto mDir : MovesPatterns::ROOK) {
+			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
@@ -644,29 +596,21 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 					viewedSquares.push_back(move);
 					
 					//if kingFuture = true skip KING
-					bool isTargetKing = (this->at(move.x, move.y)->type == "K" || this->at(move.x, move.y)->type == "k");
+					bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
 					//if ignoreKing==true and target is king then DO NOT BREAK
 					if (!(ignoreKing && isTargetKing))
 						break;
 				}
-
-				multiplier++;
-				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+				move.x += mDir.x;
+				move.y += mDir.y;
 			}
 		}
 	}
 
-	if (pieceType == "B") {
-		std::vector<sf::Vector2i> moveDirections;
-		moveDirections.push_back(sf::Vector2i(1, 1));
-		moveDirections.push_back(sf::Vector2i(1, -1));
-		moveDirections.push_back(sf::Vector2i(-1, 1));
-		moveDirections.push_back(sf::Vector2i(-1, -1));
-
+	if (pieceType == PieceName::WHITE_BISHOP) {
 		//for each direction
-		for (auto mDir : moveDirections) {
-			int multiplier = 1;
-			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+		for (auto mDir : MovesPatterns::BISHOP) {
+			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
@@ -676,33 +620,23 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 					viewedSquares.push_back(move);
 
 					//if kingFuture = true skip KING
-					bool isTargetKing = (this->at(move.x, move.y)->type == "K" || this->at(move.x, move.y)->type == "k");
+					bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
 					//if ignoreKing==true and target is king then DO NOT BREAK
 					if (!(ignoreKing && isTargetKing))
 						break;
 				}
 
-				multiplier++;
-				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+				move.x += mDir.x;
+				move.y += mDir.y;
 			}
 		}
 	}
 
-	if (pieceType == "Q") {
-		std::vector<sf::Vector2i> moveDirections;
-		moveDirections.push_back(sf::Vector2i(1, 0));
-		moveDirections.push_back(sf::Vector2i(-1, 0));
-		moveDirections.push_back(sf::Vector2i(0, 1));
-		moveDirections.push_back(sf::Vector2i(0, -1));
-		moveDirections.push_back(sf::Vector2i(1, 1));
-		moveDirections.push_back(sf::Vector2i(1, -1));
-		moveDirections.push_back(sf::Vector2i(-1, 1));
-		moveDirections.push_back(sf::Vector2i(-1, -1));
+	if (pieceType == PieceName::WHITE_QUEEN) {
 
 		//for each direction
-		for (auto mDir : moveDirections) {
-			int multiplier = 1;
-			sf::Vector2i move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+		for (auto mDir : MovesPatterns::QUEEN) {
+			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
@@ -712,27 +646,23 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 					viewedSquares.push_back(move);
 
 					//if kingFuture = true skip KING
-					bool isTargetKing = (this->at(move.x, move.y)->type == "K" || this->at(move.x, move.y)->type == "k");
+					bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
 					//if ignoreKing==true and target is king then DO NOT BREAK
 					if (!(ignoreKing && isTargetKing))
 						break;
 				}
-
-				multiplier++;
-				move = sf::Vector2i(row + mDir.x * multiplier, col + mDir.y * multiplier);
+				move.x += mDir.x;
+				move.y += mDir.y;
 			}
 		}
 	}
 
-	if (pieceType == "K") {
-		viewedSquares.push_back(sf::Vector2i(row + 1, col));
-		viewedSquares.push_back(sf::Vector2i(row - 1, col));
-		viewedSquares.push_back(sf::Vector2i(row, col + 1));
-		viewedSquares.push_back(sf::Vector2i(row, col - 1));
-		viewedSquares.push_back(sf::Vector2i(row + 1, col - 1));
-		viewedSquares.push_back(sf::Vector2i(row + 1, col + 1));
-		viewedSquares.push_back(sf::Vector2i(row - 1, col - 1));
-		viewedSquares.push_back(sf::Vector2i(row - 1, col + 1));
+	if (pieceType == PieceName::WHITE_KING) {
+		for (auto move : MovesPatterns::KING) {
+			move.x += row;
+			move.y += col;
+			viewedSquares.push_back(move);
+		}
 	}
 
 	return viewedSquares;
@@ -760,7 +690,7 @@ std::string Board::getFEN() {
 					fenPosition += ::std::to_string(freeSquares);
 					freeSquares = 0;
 				}
-				fenPosition += this->at(row, col)->type;
+				fenPosition += this->at(row, col);
 			}
 		}
 
@@ -791,12 +721,12 @@ std::string Board::getFEN() {
 }
 
 bool Board::isCheck() {
-	std::string kingType = activePlayer == ColorType::LIGHT ? "K" : "k";
+	char kingType = activePlayer == ColorType::LIGHT ? PieceName::WHITE_KING : PieceName::BLACK_KING;
 	ColorType attackerColor = activePlayer == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
 	for (auto squareUnderAttack : this->getSquaresUnderAttack(attackerColor)) {
 		if(isFreeSquare(squareUnderAttack.x, squareUnderAttack.y))continue;
 		
-		if (this->at(squareUnderAttack.x, squareUnderAttack.y)->type == kingType) {
+		if (this->at(squareUnderAttack.x, squareUnderAttack.y) == kingType) {
 			return true;
 		}
 	}
@@ -804,19 +734,19 @@ bool Board::isCheck() {
 	return false;
 }
 //checkKingColor - color of king that will be checked/attacked
-bool Board::isCheck(ColorType checkKingColor) {
-	std::string kingType = checkKingColor == ColorType::LIGHT ? "K" : "k";
-	ColorType attackerColor = checkKingColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
-	for (auto squareUnderAttack : this->getSquaresUnderAttack(attackerColor)) {
-		if (isFreeSquare(squareUnderAttack.x, squareUnderAttack.y))continue;
-
-		if (this->at(squareUnderAttack.x, squareUnderAttack.y)->type == kingType) {
-			return true;
-		}
-	}
-
-	return false;
-}
+//bool Board::isCheck(ColorType checkKingColor) {
+//	char kingType = activePlayer == ColorType::LIGHT ? PieceName::WHITE_KING : PieceName::BLACK_KING;
+//	ColorType attackerColor = checkKingColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
+//	for (auto squareUnderAttack : this->getSquaresUnderAttack(attackerColor)) {
+//		if (isFreeSquare(squareUnderAttack.x, squareUnderAttack.y))continue;
+//
+//		if (this->at(squareUnderAttack.x, squareUnderAttack.y) == kingType) {
+//			return true;
+//		}
+//	}
+//
+//	return false;
+//}
 
 GameStatus Board::gameStatus() {
 	//1. isCheck
@@ -841,7 +771,7 @@ GameStatus Board::gameStatus() {
 		for (int col = 0; col < 8; col++) {
 			if (this->isFreeSquare(row, col))continue;
 
-			if (this->at(row, col)->getCapitalType() != "K") {
+			if (getPieceCapsTypeAt(row, col) != PieceName::WHITE_KING) {
 				piece++;
 				if (piece > 1)
 					return GameStatus::ON;
@@ -897,7 +827,7 @@ std::vector<Move> Board::getAllPossibleMoves() {
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
 			//if ally (friendly piece)
-			if (this->at(row, col) != nullptr && this->at(row, col)->getColor() == this->activePlayer) {
+			if (this->at(row, col) != PieceName::EMPTY && getPieceColorAt(row, col) == this->activePlayer) {
 				std::vector<Move> piecePossibleMoves = this->getPossibleMoves(row, col, this->activePlayer);
 				//combine (insert into all moves) all moves and piece moves
 				allPossibleMoves.insert(allPossibleMoves.begin(), piecePossibleMoves.begin(), piecePossibleMoves.end());
@@ -908,11 +838,8 @@ std::vector<Move> Board::getAllPossibleMoves() {
 	return allPossibleMoves;
 }
 
-//TODO do zmiany bo jest tragicznie napisane. prev fen => historia
-//przypadek prevFen == ""
 void Board::undoMove() {
-	if (this->fenHistory.size() > 0) {
-		this->fen = this->fenHistory.back();
+	if (this->fenHistory.size() > 1) {
 		this->fenHistory.pop_back();
 		this->initBoard();
 	}

@@ -1,6 +1,5 @@
 #include "BotMachina.h"
 #include "Constants.h"
-#include "Piece.h"
 #include "Board.h"
 #include <iostream>
 
@@ -59,23 +58,23 @@ double BotMachina::evalPosition(Board &board) {
 	// >0	white +
 	// ==0	equal 0
 	// <0	black -
-	std::map<std::string, double> pieceValue;
-	pieceValue["P"] = 1;
-	pieceValue["B"] = 3;
-	pieceValue["N"] = 3;
-	pieceValue["R"] = 5;
-	pieceValue["Q"] = 9;
+	std::map<char, double> pieceValue;
+	pieceValue[PieceName::WHITE_PAWN] = 1;
+	pieceValue[PieceName::WHITE_BISHOP] = 3;
+	pieceValue[PieceName::WHITE_KNIGHT] = 3;
+	pieceValue[PieceName::WHITE_ROOK] = 5;
+	pieceValue[PieceName::WHITE_QUEEN] = 9;
 
 	double evalPoints = 0;
 
 	//for each piece on board count points
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
-			if (board.at(row, col) == nullptr) continue;
+			if (board.at(row, col) == PieceName::EMPTY) continue;
 			
 			//each piece
-			std::string pieceCapitalType = board.at(row, col)->getCapitalType();
-			int valueMultiplier = board.at(row, col)->getColor() == ColorType::LIGHT ? 1 : -1;
+			char pieceCapitalType = board.getPieceCapsTypeAt(row, col);
+			int valueMultiplier = board.getPieceColorAt(row, col) == ColorType::LIGHT ? 1 : -1;
 
 			if (pieceValue.count(pieceCapitalType)) {
 				double value = pieceValue.at(pieceCapitalType);

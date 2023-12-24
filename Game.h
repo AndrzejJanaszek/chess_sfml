@@ -1,7 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Board.h"
-
+#include "Constants.h"
+#include "BotMachina.h"
 
 class Game
 {
