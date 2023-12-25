@@ -21,13 +21,13 @@ struct PieceName
 	static const char EMPTY;
 };
 
-
 struct TextureName : PieceName
 {
 	static const std::string DARK_SQUARE;
 	static const std::string LIGHT_SQUARE;
 	static const std::string SQUARE_SHADOW;
 };
+
 struct MovesPatterns
 {
 	/*static std::vector<sf::Vector2i> WHITE_PAWN;
@@ -39,6 +39,9 @@ struct MovesPatterns
 	static std::vector<sf::Vector2i> KING;
 };
 
+struct PieceValue {
+	static std::map<char, int> value;
+};
 
 enum ColorType
 {

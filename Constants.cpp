@@ -70,6 +70,13 @@ std::vector<sf::Vector2i> MovesPatterns::KING = { MovesPatterns::QUEEN };
 //	sf::Vector2i(-1, -1)
 //};
 
+std::map<char, int> PieceValue::value = {
+	std::pair<char, int>(PieceName::WHITE_PAWN, 100),
+	std::pair<char, int>(PieceName::WHITE_BISHOP, 300),
+	std::pair<char, int>(PieceName::WHITE_KNIGHT, 300),
+	std::pair<char, int>(PieceName::WHITE_ROOK, 500),
+	std::pair<char, int>(PieceName::WHITE_QUEEN, 900)
+};
 
 Move::Move() {
 

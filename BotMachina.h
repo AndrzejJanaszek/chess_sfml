@@ -17,11 +17,11 @@ public:
 	virtual ~BotMachina();
 
 	//best move in position depth 1
-	Move getMove(Board& board);
+	Move getMove(Board &board);
 
-	double evalPosition(Board &board);
+	int evalPosition(Board &board);
 
 	//bes move for deptn = n
-	Move depthSearch(Board& board, int depth);
+	Move depthSearch(Board &board, int depth);
 
 };

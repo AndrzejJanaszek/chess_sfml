@@ -16,7 +16,6 @@ BotMachina::~BotMachina()
 {
 }
 
-//todo: getMove(unsigned int depth,...)
 Move BotMachina::getMove(Board &board) {
 	//expected(positionFEN) [position] [botColor] ...
 	std::vector<Move> allPossibleMoves = board.getAllPossibleMoves();
@@ -29,12 +28,12 @@ Move BotMachina::getMove(Board &board) {
 	}
 
 	Move bestMove;
-	double bestEval = 0;
+	int bestEval = 0;
 	bool first = true;
-	for (Move move : allPossibleMoves) {
+	for (Move &move : allPossibleMoves) {
 		board.makeMove(move);
 		int colorMultiplier = color == ColorType::LIGHT ? 1 : -1;
-		double evalValue = this->evalPosition(board) * colorMultiplier;
+		int evalValue = this->evalPosition(board) * colorMultiplier;
 
 		//set first max
 		if (first) {
@@ -54,18 +53,12 @@ Move BotMachina::getMove(Board &board) {
 	return bestMove;
 }
 
-double BotMachina::evalPosition(Board &board) {
+int BotMachina::evalPosition(Board &board) {
 	// >0	white +
 	// ==0	equal 0
 	// <0	black -
-	std::map<char, double> pieceValue;
-	pieceValue[PieceName::WHITE_PAWN] = 1;
-	pieceValue[PieceName::WHITE_BISHOP] = 3;
-	pieceValue[PieceName::WHITE_KNIGHT] = 3;
-	pieceValue[PieceName::WHITE_ROOK] = 5;
-	pieceValue[PieceName::WHITE_QUEEN] = 9;
 
-	double evalPoints = 0;
+	int evalPoints = 0;
 
 	//for each piece on board count points
 	for (int row = 0; row < 8; row++) {
@@ -76,11 +69,9 @@ double BotMachina::evalPosition(Board &board) {
 			char pieceCapitalType = board.getPieceCapsTypeAt(row, col);
 			int valueMultiplier = board.getPieceColorAt(row, col) == ColorType::LIGHT ? 1 : -1;
 
-			if (pieceValue.count(pieceCapitalType)) {
-				double value = pieceValue.at(pieceCapitalType);
-				value *= VALUE_MAP::getValueAtPositioin(row, col, pieceCapitalType, color);
-				evalPoints += value * valueMultiplier;
-			}
+			int value = PieceValue::value.at(pieceCapitalType);
+			//value *= VALUE_MAP::getValueAtPositioin(row, col, pieceCapitalType, color);
+			evalPoints += value * valueMultiplier;
 		}
 	}
 
@@ -98,18 +89,18 @@ Move BotMachina::depthSearch(Board& board, int depth) {
 		std::vector<double> finalMovesEvaluations;
 
 		//enemy response
-		for (auto move : possibleMoves) {
+		for (auto &move : possibleMoves) {
 			board.makeMove(move);
 			std::vector<Move> possibleMovesEnemy = board.getAllPossibleMoves();
 
-			for (auto enemyMove : possibleMovesEnemy) {
+			for (auto &enemyMove : possibleMovesEnemy) {
 				board.makeMove(enemyMove);
 				//odpowiedŸ na ruch przeciwnika
 				//my* best reaction/response on enemy /\ move
 				Move myResponse = this->depthSearch(board, depth - 1);
 				board.makeMove(myResponse);
 				//push_back FINAL EVALUATION
-				finalMovesEvaluations.push_back(evalPosition(board));
+				finalMovesEvaluations.push_back( evalPosition(board) );
 				//std::cout << "Size: " << finalMovesEvaluations.size() << std::endl;
 				//undo moves (my response and enemy move)
 				board.undoMove();

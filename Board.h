@@ -72,17 +72,18 @@ public:
 	void makeMove(Move move);
 	void undoMove();
 
-	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor, bool ignoreKing);
-	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor, bool ignoreKing);
 
-	std::vector<sf::Vector2i> getSquaresUnderAttack(ColorType attackerColor);
-	std::vector<sf::Vector2i> getPieceView(int row, int col, ColorType activeColor);
+	//std::unique_ptr<bool[]> getSquaresUnderAttack(ColorType attackerColor, bool ignoreKing);
+	std::unique_ptr<bool[]> getSquaresUnderAttack(ColorType attackerColor);
+
+	//std::unique_ptr<bool[]> getPieceView(int row, int col, ColorType activeColor, bool ignoreKing);
+	std::unique_ptr<bool[]> getPieceView(int row, int col, ColorType activeColor);
 
 	std::string getFEN();
 
 	bool isCheck();
 	//checkKingColor - color of king that will be checked/attacked
-	/*bool isCheck(ColorType checkKingColor);*/
+	bool isCheckReversed();
 
 	GameStatus gameStatus();
 

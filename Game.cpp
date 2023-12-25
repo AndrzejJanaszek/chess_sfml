@@ -79,8 +79,14 @@ void Game::initWindow()
 
 //Game::Game() : board("8/8/3k4/8/8/3K4/8/8 w - - 0 1")
 //Game::Game() : board("8/p7/3k4/8/8/3K4/8/8 w - - 0 1")
+//king of \/
+//Game::Game() : board("rnbq1bnr/pppppppp/7k/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
+//2
+//Game::Game() : board("rnbqbnr1/pppppppp/7k/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
+//3
+Game::Game() : board("rnbqbnrk/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQq - 0 1")
 //Game::Game() : board("bb2k3/3np1p1/2p2pn1/1p6/7P/2N1PNP1/1PPP1P2/2B1KB2 w - - 0 1")
-Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+//Game::Game() : board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 {
 	initVariables();
 	initWindow();
@@ -122,19 +128,19 @@ void Game::pollEvents() {
 							board.makeMove(possibleMoves[i]);
 							this->activePiece = sf::Vector2i(-1,-1);
 							possibleMoves.clear();
-							//board.swapActivePlayer();
 
 							this->checkGameStatus();
+
 							if (this->AI_ON) {
 								//BOT MACHINA MOVE
 								BotMachina botMachina(board.getActivePlayer());
+								std::cout << "Bot\n";
 								//Move botMove = botMachina.getMove(this->board.getFEN());
 								Board boardForBot(this->board.getFEN());
-								Move botMove = botMachina.depthSearch(boardForBot, 2);
+								Move botMove = botMachina.depthSearch(boardForBot, 1);
 								if (!botMove.isEmpty()) {
 									this->board.makeMove(botMove);
 								}
-								//board.swapActivePlayer();
 
 								this->checkGameStatus();
 							}
@@ -157,6 +163,7 @@ void Game::pollEvents() {
 
 void Game::update()
 {
+	//std::cout << this->board.getActivePlayer() << std::endl;
 	this->pollEvents();
 }
 

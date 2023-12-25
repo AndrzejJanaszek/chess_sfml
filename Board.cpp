@@ -1,6 +1,7 @@
 #include "Board.h"
 #include <string>
 #include <iostream>
+#include <memory>
 #include "Constants.h"
 
 Board::Board(std::string fen)
@@ -129,6 +130,7 @@ ColorType Board::getPieceColor(char type) {
 char Board::getPieceCapsTypeAt(int row, int col) {
 	return this->getPieceCapsType(this->at(row, col));
 }
+
 char Board::getPieceCapsType(char type) {
 	if (65 <= type && type <= 90) {
 		//white
@@ -204,7 +206,6 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		sf::Vector2i move1		= sf::Vector2i(row + 1 * colorDirectionMultiplier, col);
 		sf::Vector2i move2		= sf::Vector2i(row + 2 * colorDirectionMultiplier, col);
 
-
 		//attacks
 		//if onBoard AND isEnemy
 		if ( this->isMoveOnBoard(attack1.x, attack1.y) ) {
@@ -214,7 +215,7 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 				if (row == promotionRow)
 					possibleMoves.push_back(Move(from, attack1, MoveType::PROMOTION));
 				else
-				possibleMoves.push_back(Move(from, attack1, MoveType::TAKE) );
+					possibleMoves.push_back(Move(from, attack1, MoveType::TAKE) );
 			}
 		}
 		if (this->isMoveOnBoard(attack2.x, attack2.y)) {
@@ -224,7 +225,7 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 				if (row == promotionRow)
 					possibleMoves.push_back(Move(from, attack2, MoveType::PROMOTION));
 				else
-				possibleMoves.push_back(Move(from, attack2, MoveType::TAKE));
+					possibleMoves.push_back(Move(from, attack2, MoveType::TAKE));
 			}
 		}
 
@@ -234,7 +235,7 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 			if (row == promotionRow)
 				possibleMoves.push_back(Move(from, move1, MoveType::PROMOTION));
 			else
-			possibleMoves.push_back(Move(from, move1, MoveType::NORMAL) );
+				possibleMoves.push_back(Move(from, move1, MoveType::NORMAL) );
 
 			//move2 PAWN_LONG
 			if (firstPawnRow == row) {
@@ -333,24 +334,19 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 
 	if (pieceType == PieceName::WHITE_KING) {
 		ColorType enemyColor = activeColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
-		std::vector<sf::Vector2i> squaresUnderAttack = getSquaresUnderAttack(enemyColor, true);
+		std::unique_ptr<bool[]> squaresUnderAttack = getSquaresUnderAttack(enemyColor);
 
 		for (auto move : MovesPatterns::KING) {
 			move.x += row;
 			move.y += col;
 			if (!isMoveOnBoard(move.x, move.y)) continue;
 
-			bool containsMove = false;
-			//is square under attack
-			for (auto &squareUnderAttack : squaresUnderAttack) {
-				if (move.x == squareUnderAttack.x && move.y == squareUnderAttack.y) {
-					containsMove = true; 
-					break; 
-				}
-			}
+			//is square under attack => continue/skip_move
+			if (squaresUnderAttack[move.x * 8 + move.y])
+				continue;
 
 			//if not underAttack and is not friendly piece
-			if (!containsMove && !isFriendlyPiece(move.x, move.y, activeColor)) {
+			if (!isFriendlyPiece(move.x, move.y, activeColor)) {
 				//after move will king be under attack
 				possibleMoves.push_back(Move(from, move, MoveType::NORMAL));
 			}
@@ -370,7 +366,6 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		}
 //_____________________________
 
-		bool columnsAttackStatus[8] = { 0 };
 		//QUEEN col [0,1,2,3]
 		//KING col	[5,6,7]
 		// + is king under attack [4]
@@ -379,22 +374,11 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		bool queenFree = isFreeSquare(row, 1) && isFreeSquare(row, 2) && isFreeSquare(row, 3);
 		bool kingFree = isFreeSquare(row, 5) && isFreeSquare(row, 6);
 
-		//for each square in row=row and column = i
-		//columnsAttackStatus[] assign:
 		//1 - under attack;		0 - not
-		for (int i = 0; i < 8; i++) {
-			for (auto squareUnderAttack : squaresUnderAttack) {
-				if (row == squareUnderAttack.x &&  i == squareUnderAttack.y) {
-					columnsAttackStatus[i] = true;
-				}
-			}
-		}
-
-		//1 - under attack;		0 - not
-		bool queenSideAttack = columnsAttackStatus[0] || columnsAttackStatus[1] ||
-			columnsAttackStatus[2] || columnsAttackStatus[3] || columnsAttackStatus[4];
-		bool kingSideAttack = columnsAttackStatus[4] || columnsAttackStatus[5] ||
-			columnsAttackStatus[6] || columnsAttackStatus[7];
+		bool queenSideAttack = squaresUnderAttack[8 * row + 0] || squaresUnderAttack[8 * row + 1] ||
+			squaresUnderAttack[8 * row + 2] || squaresUnderAttack[8 * row + 3] || squaresUnderAttack[8 * row + 4];
+		bool kingSideAttack = squaresUnderAttack[8 * row + 4] || squaresUnderAttack[8 * row + 5] ||
+			squaresUnderAttack[8 * row + 6] || squaresUnderAttack[8 * row + 7];
 
 		//is king castle possible FINAL
 		if (kingPossible && kingFree && !kingSideAttack) {
@@ -404,8 +388,6 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 		if (queenPossible && queenFree && !queenSideAttack) {
 			possibleMoves.push_back(Move(from, sf::Vector2i(row, 4-2), MoveType::QUEEN_CASTLE));
 		}
-
-
 	}
 
 	/*printf("afterBoard: %u\n", afterBoard.board);
@@ -417,14 +399,15 @@ std::vector<Move> Board::getPossibleMoves(int row, int col, ColorType activeColo
 	//for each possibleMove check is it legal
 	//won't be check after it
 	std::vector<Move> possibleMovesFINAL;
-	Board afterBoard(this->getFEN());
-	for (auto posMove : possibleMoves) {
-		afterBoard.makeMove(posMove);
-		if (!afterBoard.isCheck()) {
+	//Board afterBoard(this->getFEN());
+	for (auto &posMove : possibleMoves) {
+		this->makeMove(posMove);
+		if (!this->isCheckReversed()) {
 			possibleMovesFINAL.push_back(posMove);
 		}
-		afterBoard.undoMove();
+		this->undoMove();
 	}
+
 
 	return possibleMovesFINAL;
 }
@@ -457,6 +440,7 @@ void Board::clearEnPassant() {
 void Board::makeMove(sf::Vector2i from, sf::Vector2i dest) {
 	board[dest.x * 8 + dest.y] = this->at(from.x, from.y);
 	board[from.x * 8 + from.y] = PieceName::EMPTY;
+	this->swapActivePlayer();
 
 	this->fenHistory.push_back(this->getFEN());
 }
@@ -522,36 +506,46 @@ void Board::makeMove(Move move) {
 	}
 	makeMove(move.from, move.destination);
 	//this->print();
-	this->swapActivePlayer();
 }
 
 //get ALL squares under attack
-std::vector<sf::Vector2i> Board::getSquaresUnderAttack(ColorType attackerColor, bool ignoreKing) {
-	std::vector<sf::Vector2i> squares;
-	bool* table = new bool[8 * 8]{0};
+std::unique_ptr<bool[]> Board::getSquaresUnderAttack(ColorType attackerColor) {
+	std::unique_ptr<bool[]> table( new bool[8 * 8] {0} );
 	// tableAt ( row*8 + col )
 	for (int row = 0; row < 8; row++) {
 		for (int col = 0; col < 8; col++) {
+			//foreach attacker
 			if (this->at(row, col) != PieceName::EMPTY && this->getPieceColorAt(row, col) == attackerColor) {
-				//for each square that piece (see/is under piece's attack)
-				for (auto viewedSquare : getPieceView(row, col, attackerColor, ignoreKing)) {
-					table[viewedSquare.x * 8 + viewedSquare.y] = true;
+				std::cout << this->at(row, col) << "\n";
+				//auto squaresUnderCurrentPieceAtatck = std::move(getPieceView(row, col, attackerColor));
+				std::unique_ptr<bool[]> squaresUnderCurrentPieceAtatck = getPieceView(row, col, attackerColor);
+				/*
+				print
+				for (int _row = 0; _row < 8; _row++) {
+					for (int _col = 0; _col < 8; _col++) {
+						std::cout << squaresUnderCurrentPieceAtatck[_row * 8 + _col];
+					}
+					std::cout << "\n";
 				}
+				std::cout << "\n";*/
+
+				//if square under attack set table[i] = 1
+				for (int i = 0; i < 64; i++) {
+					table[i] = table[i] || squaresUnderCurrentPieceAtatck[i];
+				}
+				
 			}
 		}
 	}
-	for (int row = 0; row < 8; row++) {
-		for (int col = 0; col < 8; col++) {
-			if (table[row * 8 + col]) squares.push_back(sf::Vector2i(row, col));
-		}
-	}
 
-	return squares;
+	return table;
 }
 //get squares that THIS PIECE attacks
-std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType activeColor, bool ignoreKing){
-	std::vector<sf::Vector2i> viewedSquares;
-	if (isFreeSquare(row,col)) return viewedSquares;
+std::unique_ptr<bool[]> Board::getPieceView(int row, int col, ColorType activeColor){
+	std::unique_ptr<bool[]> arr(new bool[8 * 8] {0});
+	//std::unique_ptr<bool[]> arr(new bool[8 * 8] {0});
+	
+	if (isFreeSquare(row,col)) return arr;
 
 	char pieceType = getPieceCapsTypeAt(row, col);
 	//pawn
@@ -565,41 +559,45 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 		//if onBoard AND isEnemy
 		if (this->isMoveOnBoard(attack1.x, attack1.y)) {
 			if (isEnemyPiece(attack1.x, attack1.y, activeColor) || (enPassant.x == attack1.x && enPassant.y == attack1.y)) {
-				viewedSquares.push_back(attack1);
+				arr[8 * attack1.x + attack1.y] = 1;
 			}
 		}
 		if (this->isMoveOnBoard(attack2.x, attack2.y)) {
 			if (isEnemyPiece(attack2.x, attack2.y, activeColor) || (enPassant.x == attack2.x && enPassant.y == attack2.y)) {
-				viewedSquares.push_back(attack2);
+				arr[8 * attack2.x + attack2.y] = 1;
 			}
 		}
 	}
 
-	if (pieceType == PieceName::WHITE_KNIGHT) {
-		for (auto &moveT : MovesPatterns::KNIGHT) {
+	else if (pieceType == PieceName::WHITE_KNIGHT) {
+		for (auto moveT : MovesPatterns::KNIGHT) {
+			moveT.x += row;
+			moveT.y += col;
 			//if not on board continue
 			if (!isMoveOnBoard(moveT.x, moveT.y)) continue;
-			viewedSquares.push_back(moveT);
+
+			arr[8 * moveT.x + moveT.y] = 1;
 		}
 	}
 
-	if (pieceType == PieceName::WHITE_ROOK) {
+	else if (pieceType == PieceName::WHITE_ROOK) {
 		//for each direction
-		for (auto mDir : MovesPatterns::ROOK) {
+		for (auto &mDir : MovesPatterns::ROOK) {
 			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
-					viewedSquares.push_back(move);
+					arr[8 * move.x + move.y] = 1;
 				}
 				else if (this->isEnemyPiece(move.x, move.y, activeColor) || this->isFriendlyPiece(move.x, move.y, activeColor)) {
-					viewedSquares.push_back(move);
+					arr[8 * move.x + move.y] = 1;
+					break;
 					
-					//if kingFuture = true skip KING
-					bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
-					//if ignoreKing==true and target is king then DO NOT BREAK
-					if (!(ignoreKing && isTargetKing))
-						break;
+					////if kingFuture = true skip KING
+					//bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
+					////if ignoreKing==true and target is king then DO NOT BREAK
+					//if (!(ignoreKing && isTargetKing))
+					//	break;
 				}
 				move.x += mDir.x;
 				move.y += mDir.y;
@@ -607,23 +605,23 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 		}
 	}
 
-	if (pieceType == PieceName::WHITE_BISHOP) {
+	else if (pieceType == PieceName::WHITE_BISHOP) {
 		//for each direction
 		for (auto mDir : MovesPatterns::BISHOP) {
 			sf::Vector2i move = sf::Vector2i(row + mDir.x, col + mDir.y);
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
-					viewedSquares.push_back(move);
+					arr[8 * move.x + move.y] = 1;
 				}
 				else if (this->isEnemyPiece(move.x, move.y, activeColor) || this->isFriendlyPiece(move.x, move.y, activeColor)) {
-					viewedSquares.push_back(move);
-
-					//if kingFuture = true skip KING
-					bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
-					//if ignoreKing==true and target is king then DO NOT BREAK
-					if (!(ignoreKing && isTargetKing))
-						break;
+					arr[8 * move.x + move.y] = 1;
+					break;
+					////if kingFuture = true skip KING
+					//bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
+					////if ignoreKing==true and target is king then DO NOT BREAK
+					//if (!(ignoreKing && isTargetKing))
+					//	break;
 				}
 
 				move.x += mDir.x;
@@ -632,7 +630,7 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 		}
 	}
 
-	if (pieceType == PieceName::WHITE_QUEEN) {
+	else if (pieceType == PieceName::WHITE_QUEEN) {
 
 		//for each direction
 		for (auto mDir : MovesPatterns::QUEEN) {
@@ -640,16 +638,16 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 
 			while (this->isMoveOnBoard(move.x, move.y)) {
 				if (this->isFreeSquare(move.x, move.y)) {
-					viewedSquares.push_back(move);
+					arr[8 * move.x + move.y] = 1;
 				}
 				else if (this->isEnemyPiece(move.x, move.y, activeColor) || this->isFriendlyPiece(move.x, move.y, activeColor)) {
-					viewedSquares.push_back(move);
-
-					//if kingFuture = true skip KING
-					bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
-					//if ignoreKing==true and target is king then DO NOT BREAK
-					if (!(ignoreKing && isTargetKing))
-						break;
+					arr[8 * move.x + move.y] = 1;
+					break;
+					////if kingFuture = true skip KING
+					//bool isTargetKing = (this->at(move.x, move.y) == PieceName::WHITE_KING || this->at(move.x, move.y) == PieceName::BLACK_KING);
+					////if ignoreKing==true and target is king then DO NOT BREAK
+					//if (!(ignoreKing && isTargetKing))
+					//	break;
 				}
 				move.x += mDir.x;
 				move.y += mDir.y;
@@ -657,24 +655,23 @@ std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType active
 		}
 	}
 
-	if (pieceType == PieceName::WHITE_KING) {
+	else if (pieceType == PieceName::WHITE_KING) {
 		for (auto move : MovesPatterns::KING) {
 			move.x += row;
 			move.y += col;
-			viewedSquares.push_back(move);
+			arr[8 * move.x + move.y] = 1;
 		}
 	}
 
-	return viewedSquares;
+	return arr;
 }
 
-std::vector<sf::Vector2i> Board::getSquaresUnderAttack(ColorType attackerColor) {
-	return getSquaresUnderAttack(attackerColor, false);
-}
-
-std::vector<sf::Vector2i> Board::getPieceView(int row, int col, ColorType activeColor) {
-	return getPieceView(row, col, activeColor, false);
-}
+//std::unique_ptr<bool[]> Board::getSquaresUnderAttack(ColorType attackerColor) {
+//	return getSquaresUnderAttack(attackerColor, false);
+//}
+//std::unique_ptr<bool[]> Board::getPieceView(int row, int col, ColorType activeColor) {
+//	return getPieceView(row, col, activeColor, false);
+//}
 
 std::string Board::getFEN() {
 	//FEN POSITION
@@ -723,30 +720,36 @@ std::string Board::getFEN() {
 bool Board::isCheck() {
 	char kingType = activePlayer == ColorType::LIGHT ? PieceName::WHITE_KING : PieceName::BLACK_KING;
 	ColorType attackerColor = activePlayer == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
-	for (auto squareUnderAttack : this->getSquaresUnderAttack(attackerColor)) {
-		if(isFreeSquare(squareUnderAttack.x, squareUnderAttack.y))continue;
-		
-		if (this->at(squareUnderAttack.x, squareUnderAttack.y) == kingType) {
-			return true;
+
+	std::unique_ptr<bool[]> squaresUnderAttack = this->getSquaresUnderAttack(attackerColor);
+
+	for (int row = 0; row < 8; row++) {
+		for (int col = 0; col < 8; col++) {
+			if (this->at(row, col) == kingType && squaresUnderAttack[8 * row + col]) {
+				return true;
+			}
 		}
 	}
 
 	return false;
 }
 //checkKingColor - color of king that will be checked/attacked
-//bool Board::isCheck(ColorType checkKingColor) {
-//	char kingType = activePlayer == ColorType::LIGHT ? PieceName::WHITE_KING : PieceName::BLACK_KING;
-//	ColorType attackerColor = checkKingColor == ColorType::LIGHT ? ColorType::DARK : ColorType::LIGHT;
-//	for (auto squareUnderAttack : this->getSquaresUnderAttack(attackerColor)) {
-//		if (isFreeSquare(squareUnderAttack.x, squareUnderAttack.y))continue;
-//
-//		if (this->at(squareUnderAttack.x, squareUnderAttack.y) == kingType) {
-//			return true;
-//		}
-//	}
-//
-//	return false;
-//}
+bool Board::isCheckReversed() {
+	char kingType = activePlayer == ColorType::LIGHT ? PieceName::BLACK_KING : PieceName::WHITE_KING;
+	ColorType attackerColor = activePlayer == ColorType::LIGHT ? ColorType::LIGHT : ColorType::DARK;
+
+	std::unique_ptr<bool[]> squaresUnderAttack = this->getSquaresUnderAttack(attackerColor);
+
+	for (int row = 0; row < 8; row++) {
+		for (int col = 0; col < 8; col++) {
+			if (this->at(row, col) == kingType && squaresUnderAttack[8 * row + col]) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 GameStatus Board::gameStatus() {
 	//1. isCheck
@@ -803,7 +806,6 @@ GameStatus Board::gameStatus() {
 
 	return GameStatus::ON;
 }
-
 
 std::string Board::getNotation(int row, int col) {
 	std::string notationStr = "";
